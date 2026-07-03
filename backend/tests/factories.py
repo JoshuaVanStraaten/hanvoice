@@ -97,6 +97,80 @@ def subscription_row(user_id: str = TEST_USER_ID, **overrides: Any) -> dict[str,
     }
 
 
+def lesson_row(lesson_id: int = 1, **overrides: Any) -> dict[str, Any]:
+    return {
+        "id": lesson_id,
+        "slug": "cafe-essentials",
+        "title": "Café essentials",
+        "description": "The handful of phrases that get you through any Seoul café.",
+        "sort_order": 1,
+        **overrides,
+    }
+
+
+def phrase_row(phrase_id: int = 1, **overrides: Any) -> dict[str, Any]:
+    return {
+        "id": phrase_id,
+        "lesson_id": 1,
+        "hangul": "아이스 아메리카노 주세요",
+        "romanized": "aiseu amerikano juseyo",
+        "english": "One iced americano, please",
+        "audio_url": None,
+        "sort_order": 1,
+        **overrides,
+    }
+
+
+def scenario_row(**overrides: Any) -> dict[str, Any]:
+    return {
+        "id": 1,
+        "slug": "cafe-iced-americano",
+        "title": "Order an iced Americano",
+        "description": "Greet the barista and order an iced Americano.",
+        "difficulty": 1,
+        "sort_order": 1,
+        "completion_goals": [
+            "greeted",
+            "ordered_drink",
+            "stated_size_or_temp",
+            "paid",
+            "said_thanks",
+        ],
+        **overrides,
+    }
+
+
+def prompt_row(**overrides: Any) -> dict[str, Any]:
+    return {"id": 1, "version": 1, "system_prompt": "SYSTEM PROMPT", **overrides}
+
+
+def session_row(**overrides: Any) -> dict[str, Any]:
+    return {
+        "id": 1,
+        "user_id": TEST_USER_ID,
+        "scenario_id": 1,
+        "status": "active",
+        "goals_completed": [],
+        "started_at": "2026-07-03T10:00:00+00:00",
+        "ended_at": None,
+        **overrides,
+    }
+
+
+def message_row(message_id: int = 1, role: str = "assistant", **overrides: Any) -> dict[str, Any]:
+    return {
+        "id": message_id,
+        "session_id": 1,
+        "role": role,
+        "hangul": "안녕하세요! 뭐 드릴까요?",
+        "romanized": "annyeonghaseyo! mwo deurilkkayo?",
+        "english": "Hello! What can I get you?",
+        "contextual_correction": "",
+        "created_at": "2026-07-03T10:00:01+00:00",
+        **overrides,
+    }
+
+
 def founder_pass_row(user_id: str = TEST_USER_ID) -> dict[str, Any]:
     return {
         "id": 1,

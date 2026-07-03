@@ -21,6 +21,10 @@ class DatabaseError(AppError):
     status_code = 502
     code = "database_error"
 
+    def __init__(self, message: str, *, db_status: int | None = None):
+        super().__init__(message)
+        self.db_status = db_status
+
 
 JsonRow = dict[str, Any]
 
@@ -29,7 +33,6 @@ class Database:
     def __init__(self, http: httpx.AsyncClient, base_url: str, service_role_key: str):
         self._http = http
         self._rest_url = f"{base_url.rstrip('/')}/rest/v1"
-        self._storage_url = f"{base_url.rstrip('/')}/storage/v1"
         self._headers = {
             "apikey": service_role_key,
             "Authorization": f"Bearer {service_role_key}",
@@ -103,27 +106,6 @@ class Database:
         response = await self._request("POST", f"/rpc/{function}", json=args)
         return response.json() if response.content else None
 
-    async def upload_file(
-        self, bucket: str, path: str, content: bytes, content_type: str
-    ) -> str:
-        """Upload to Supabase Storage; returns the stored object path."""
-        url = f"{self._storage_url}/object/{bucket}/{path}"
-        try:
-            response = await self._http.post(
-                url,
-                content=content,
-                headers={
-                    **self._headers,
-                    "Content-Type": content_type,
-                    "x-upsert": "true",
-                },
-            )
-        except httpx.HTTPError as exc:
-            raise DatabaseError(f"Storage request failed: {exc!r}") from exc
-        if response.status_code >= 400:
-            raise DatabaseError(f"Storage upload failed ({response.status_code}).")
-        return f"{bucket}/{path}"
-
     async def _request(
         self,
         method: str,
@@ -146,7 +128,8 @@ class Database:
         if response.status_code >= 400:
             raise DatabaseError(
                 f"Database returned {response.status_code} for {method} {path}: "
-                f"{response.text[:300]}"
+                f"{response.text[:300]}",
+                db_status=response.status_code,
             )
         return response
 
