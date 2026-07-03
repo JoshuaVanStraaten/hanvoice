@@ -98,6 +98,11 @@ class Database:
         )
         return self._rows(response)
 
+    async def rpc(self, function: str, args: JsonRow) -> Any:
+        """Call a Postgres function exposed through PostgREST."""
+        response = await self._request("POST", f"/rpc/{function}", json=args)
+        return response.json() if response.content else None
+
     async def upload_file(
         self, bucket: str, path: str, content: bytes, content_type: str
     ) -> str:
