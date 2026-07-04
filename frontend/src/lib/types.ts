@@ -110,6 +110,11 @@ export interface ConversationSession {
   ended_at: string | null;
 }
 
+export interface ConversationDetail {
+  session: ConversationSession;
+  messages: ConversationMessage[];
+}
+
 export interface StartConversationResponse {
   session: ConversationSession;
   opening_message: ConversationMessage;
