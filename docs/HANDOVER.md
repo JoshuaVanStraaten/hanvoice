@@ -33,7 +33,10 @@ no-cache confirmed).
 Supabase project **hanvoice** (`mxibibkcaarltsbkomvm`, eu-west-1, free tier) is
 migrated + seeded; `frontend/.env` and `backend/.env` are wired (gitignored).
 Test account: `joshuavanstraaten100+hanvoice-test@gmail.com` (confirmed via SQL).
-AI + Stripe keys still unset — those features 503 until configured.
+Azure Speech key live (northeurope, F0) — pronunciation + TTS. NVIDIA key live —
+Llama conversation verified in-browser (goals, corrections, audio all working).
+Stripe still unset. **TTS moved to Azure** (`1005ff4`): NVIDIA Magpie is
+gRPC-only, no REST — don't switch back without a Riva client.
 
 ## Gotchas worth remembering
 
