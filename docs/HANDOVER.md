@@ -28,7 +28,18 @@ no-cache confirmed).
 - Not deployed; follow `docs/deployment.md` (Supabase project + container host +
   static host, Stripe webhook)
 
+## Live environment (2026-07-04)
+
+Supabase project **hanvoice** (`mxibibkcaarltsbkomvm`, eu-west-1, free tier) is
+migrated + seeded; `frontend/.env` and `backend/.env` are wired (gitignored).
+Test account: `joshuavanstraaten100+hanvoice-test@gmail.com` (confirmed via SQL).
+AI + Stripe keys still unset — those features 503 until configured.
+
 ## Gotchas worth remembering
+
+- **Supabase signs ES256 now:** new projects issue asymmetric tokens with a `kid`;
+  the legacy HS256 secret verifies nothing. Backend resolves keys from the JWKS
+  endpoint (`core/security.py`, fix `199855f`) with HS256 kept for tests.
 
 - **Vite env DCE:** `import.meta.env.VITE_*` is statically replaced at build; a
   module-level throw on missing env made Rollup eliminate the entire app from the
