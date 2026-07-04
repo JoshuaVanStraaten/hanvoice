@@ -1,8 +1,11 @@
-/** MediaRecorder wrapper: one active recording at a time, resolves to a blob
- * the backend accepts (webm/opus where supported, mp4 on Safari). Recordings
- * auto-stop at 30 seconds — matching the backend's size ceiling. */
+/** MediaRecorder wrapper: one active recording at a time. Recordings are
+ * normalized to 16 kHz mono WAV before they're handed back — Azure's REST
+ * API can't decode webm/mp4 containers. Auto-stops at 30 seconds, matching
+ * the backend's size ceiling. */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { toWav16kMono } from "../lib/audio";
 
 const MAX_RECORDING_MS = 30_000;
 
@@ -26,10 +29,10 @@ export function useRecorder(): Recorder {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const stop = useCallback((): Promise<Blob | null> => {
+  const stop = useCallback(async (): Promise<Blob | null> => {
     const recorder = recorderRef.current;
-    if (!recorder || recorder.state === "inactive") return Promise.resolve(null);
-    return new Promise((resolve) => {
+    if (!recorder || recorder.state === "inactive") return null;
+    const raw = await new Promise<Blob | null>((resolve) => {
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunks.push(event.data);
@@ -42,6 +45,14 @@ export function useRecorder(): Recorder {
       };
       recorder.stop();
     });
+    if (!raw) return null;
+    try {
+      return await toWav16kMono(raw);
+    } catch {
+      // Decoding failed (rare codec edge case) — send the original and let
+      // the backend report whatever the provider says.
+      return raw;
+    }
   }, []);
 
   const start = useCallback(async () => {

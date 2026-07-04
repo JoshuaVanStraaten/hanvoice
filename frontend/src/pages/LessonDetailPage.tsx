@@ -10,6 +10,7 @@ import { Card, ErrorNote, ScoreRing, Spinner } from "../components/ui";
 import { useActivityInvalidation, useLesson } from "../hooks/queries";
 import { useRecorder } from "../hooks/useRecorder";
 import { apiPostForm } from "../lib/api";
+import { extensionFor } from "../lib/audio";
 import type { LessonPhrase, PronunciationAttempt } from "../lib/types";
 
 interface WordScore {
@@ -129,8 +130,7 @@ export function LessonDetailPage() {
   const scoreAttempt = useMutation({
     mutationFn: async ({ phraseId, audio }: { phraseId: number; audio: Blob }) => {
       const form = new FormData();
-      const extension = audio.type.includes("mp4") ? "mp4" : "webm";
-      form.append("audio", audio, `recording.${extension}`);
+      form.append("audio", audio, `recording.${extensionFor(audio)}`);
       form.append("phrase_id", String(phraseId));
       return apiPostForm<PronunciationAttempt>("/pronunciation/attempts", form);
     },

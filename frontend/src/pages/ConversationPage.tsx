@@ -11,6 +11,7 @@ import { Button, Card, ErrorNote, Spinner } from "../components/ui";
 import { useActivityInvalidation, useScenarios } from "../hooks/queries";
 import { useRecorder } from "../hooks/useRecorder";
 import { apiGet, apiPost, apiPostForm } from "../lib/api";
+import { extensionFor } from "../lib/audio";
 import { allGoalsDone, goalStates } from "../lib/goals";
 import type {
   ConversationDetail,
@@ -106,8 +107,7 @@ export function ConversationPage() {
     mutationFn: (input: { text?: string; audio?: Blob }) => {
       const form = new FormData();
       if (input.audio) {
-        const extension = input.audio.type.includes("mp4") ? "mp4" : "webm";
-        form.append("audio", input.audio, `turn.${extension}`);
+        form.append("audio", input.audio, `turn.${extensionFor(input.audio)}`);
       }
       if (input.text) form.append("text", input.text);
       return apiPostForm<TurnResponse>(`/conversations/${sessionId}/turns`, form);
