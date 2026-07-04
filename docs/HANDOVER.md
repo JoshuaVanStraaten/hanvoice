@@ -29,18 +29,38 @@ smoke-tested, CI workflow written. See `README.md`, `docs/architecture.md`,
 
 ## What's left (in rough priority order)
 
-1. **Push to GitHub** — repo has no remote; CI has never actually run.
-2. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
+1. **Real curriculum (NEXT — before the GitHub push).** Founder decision
+   2026-07-04: lessons must actually *teach*, not just drill phrases —
+   scenarios/conversations are a practice **feature**, the curriculum is the
+   product spine. Direction:
+   - **Curriculum arc:** how Hangul works (blocks, jamo) → vowels → consonants
+     → syllable building → batchim (final consonants) → beginner sound-change
+     rules (linking, nasalization — lite) → reading practice → politeness
+     (해요체) intro → then the existing phrase lessons slot in as speaking units.
+   - **Architectural implication:** the current `lessons → lesson_phrases`
+     model only supports phrase drills. Lessons need ordered *content blocks*
+     of mixed types — explanation (rich text), speak (existing pronunciation
+     loop), write (existing canvas, given jamo/syllable targets), and a light
+     read/quiz type. Likely a new migration (e.g. `lesson_blocks` with a
+     `kind` + JSONB payload, RLS read-only like other content) + a
+     LessonDetail renderer that walks blocks. Keep content as data (authoring
+     = INSERTs, no deploys); keep the pass/progress semantics per block type.
+   - **Non-goals for this pass:** no CMS/admin UI, no spaced repetition —
+     curriculum structure + the Hangul course content itself.
+   - Brainstorm → plan → execute per the superpowers workflow; the schema
+     change is approved-in-principle but the design deserves a plan doc.
+2. **Push to GitHub** — repo has no remote; CI has never actually run.
+3. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
    frontend static host (Vercel/Netlify), env vars at build time for `VITE_*`.
-3. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
+4. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
    set the four STRIPE_* env vars, point the webhook at
    `/api/billing/webhook`. Until then billing routes 503 (by design).
-4. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
+5. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
    configure custom SMTP before real signups.
-5. **Content depth** — more scenarios (only the café exists; the Talk tab is the
+6. **Content depth** — more scenarios (only the café exists; the Talk tab is the
    marquee feature), audio for lesson phrases is generated on demand (could
    pre-generate + cache in Storage), more lessons.
-6. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
+7. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
    one config line to swap), phoneme-level pronunciation coaching (needs Azure
    streaming SDK instead of REST), streaks/gamification, romanization toggle as
    a profile setting, raw-audio persistence for progress review (consent + storage).
