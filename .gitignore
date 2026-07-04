@@ -12,3 +12,4 @@ supabase/.temp/
 dist/
 *.tsbuildinfo
 dev-dist/
+.playwright-mcp/
