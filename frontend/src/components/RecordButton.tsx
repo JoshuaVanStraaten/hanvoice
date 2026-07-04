@@ -19,29 +19,44 @@ const MIC_ICON = (
   </svg>
 );
 
-const STOP_ICON = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-    <rect x="7" y="7" width="10" height="10" rx="1.5" />
-  </svg>
-);
+/** Bars weighted unevenly so the meter reads as a voice, not a gauge. */
+const BAR_WEIGHTS = [0.55, 0.85, 1, 0.7, 0.45];
+
+function VoiceBars({ level }: { level: number }) {
+  return (
+    <span className="flex h-6 items-center gap-[3px]" aria-hidden>
+      {BAR_WEIGHTS.map((weight, index) => (
+        <span
+          key={index}
+          className="w-1 rounded-full bg-white transition-[height] duration-75 ease-out"
+          style={{ height: `${Math.round(18 + Math.min(1, level) * weight * 82)}%` }}
+        />
+      ))}
+    </span>
+  );
+}
 
 export function RecordButton({
   isRecording,
   onPress,
   disabled = false,
   size = "md",
+  level = 0,
 }: {
   isRecording: boolean;
   onPress: () => void;
   disabled?: boolean;
   size?: "md" | "lg";
+  /** Live mic loudness (0-1) shown as dancing bars while recording. */
+  level?: number;
 }) {
   return (
     <button
       type="button"
       onClick={onPress}
       disabled={disabled}
-      aria-label={isRecording ? "Stop recording" : "Start recording"}
+      aria-label={isRecording ? "Stop recording and get scored" : "Start recording"}
+      title={isRecording ? "Tap to stop" : undefined}
       aria-pressed={isRecording}
       className={[
         size === "lg" ? "size-16" : "size-12",
@@ -50,7 +65,7 @@ export function RecordButton({
         isRecording ? "speak-ring-active" : "",
       ].join(" ")}
     >
-      {isRecording ? STOP_ICON : MIC_ICON}
+      {isRecording ? <VoiceBars level={level} /> : MIC_ICON}
     </button>
   );
 }

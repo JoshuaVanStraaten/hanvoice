@@ -87,6 +87,7 @@ function PhraseCard({
   isScoring,
   attempt,
   onPress,
+  level,
 }: {
   phrase: LessonPhrase;
   isActive: boolean;
@@ -94,6 +95,7 @@ function PhraseCard({
   isScoring: boolean;
   attempt: PronunciationAttempt | undefined;
   onPress: () => void;
+  level: number;
 }) {
   return (
     <Card className="space-y-3">
@@ -110,6 +112,7 @@ function PhraseCard({
           isRecording={isActive && isRecording}
           onPress={onPress}
           disabled={isScoring || (isRecording && !isActive)}
+          level={level}
         />
       </div>
       {isActive && isScoring && <Spinner label="Scoring your pronunciation" />}
@@ -190,6 +193,7 @@ export function LessonDetailPage() {
                 phrase={phrase}
                 isActive={activePhraseId === phrase.id}
                 isRecording={recorder.isRecording}
+                level={recorder.level}
                 isScoring={scoreAttempt.isPending && activePhraseId === phrase.id}
                 attempt={attempts[phrase.id]}
                 onPress={() => void handlePress(phrase.id)}

@@ -270,6 +270,7 @@ export function ConversationPage() {
             isRecording={recorder.isRecording}
             onPress={() => void handleMicPress()}
             disabled={busy}
+            level={recorder.level}
           />
           <label htmlFor="turn-text" className="sr-only">
             Type your reply in Korean
