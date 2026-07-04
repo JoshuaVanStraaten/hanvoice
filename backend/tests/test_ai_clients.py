@@ -9,15 +9,15 @@ import respx
 from app.core.errors import ServiceUnavailableError
 from app.schemas.conversation import ChatMessage
 from app.services.ai.azure_pronunciation import AzurePronunciationClient
+from app.services.ai.azure_stt import AzureSTTClient
 from app.services.ai.base import AIServiceError, AIServiceUnavailableError
 from app.services.ai.llama_chat import FALLBACK_TURN, LlamaChatClient
-from app.services.ai.nemotron_asr import NemotronASRClient
 from app.services.ai.nemotron_vision import NemotronVisionClient
 from app.services.ai.tts import TTSClient
 
 AZURE_URL = "https://koreacentral.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1"
 LLM_URL = "http://nvidia.test/v1/chat/completions"
-ASR_URL = "http://nvidia.test/v1/audio/transcriptions"
+ASR_URL = AZURE_URL  # Azure STT shares the short-audio endpoint
 TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
 
 
@@ -140,16 +140,31 @@ async def test_azure_retries_then_gives_up(http):
 @respx.mock
 async def test_asr_returns_transcript(http):
     respx.mock.post(ASR_URL).mock(
-        return_value=httpx.Response(200, json={"text": " 아이스 아메리카노 주세요 "})
+        return_value=httpx.Response(
+            200,
+            json={"RecognitionStatus": "Success", "DisplayText": " 아이스 아메리카노 주세요 "},
+        )
     )
-    client = NemotronASRClient(http, api_key="k", url=ASR_URL)
+    client = AzureSTTClient(http, key="k", region="koreacentral")
     assert await client.transcribe(b"audio") == "아이스 아메리카노 주세요"
 
 
 @respx.mock
+async def test_asr_no_match_raises(http):
+    respx.mock.post(ASR_URL).mock(
+        return_value=httpx.Response(200, json={"RecognitionStatus": "InitialSilenceTimeout"})
+    )
+    client = AzureSTTClient(http, key="k", region="koreacentral")
+    with pytest.raises(AIServiceError, match="couldn't make out"):
+        await client.transcribe(b"audio")
+
+
+@respx.mock
 async def test_asr_bad_payload_raises(http):
-    respx.mock.post(ASR_URL).mock(return_value=httpx.Response(200, json={"nope": 1}))
-    client = NemotronASRClient(http, api_key="k", url=ASR_URL)
+    respx.mock.post(ASR_URL).mock(
+        return_value=httpx.Response(200, json={"RecognitionStatus": "Success"})
+    )
+    client = AzureSTTClient(http, key="k", region="koreacentral")
     with pytest.raises(AIServiceError):
         await client.transcribe(b"audio")
 

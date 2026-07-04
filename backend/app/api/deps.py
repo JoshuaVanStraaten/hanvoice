@@ -16,8 +16,8 @@ from app.core.errors import UnauthorizedError
 from app.core.security import AuthenticatedUser, decode_access_token
 from app.db.client import Database
 from app.services.ai.azure_pronunciation import AzurePronunciationClient
+from app.services.ai.azure_stt import AzureSTTClient
 from app.services.ai.llama_chat import LlamaChatClient
-from app.services.ai.nemotron_asr import NemotronASRClient
 from app.services.ai.nemotron_vision import NemotronVisionClient
 from app.services.ai.tts import TTSClient
 from app.services.billing import BillingService
@@ -89,7 +89,9 @@ def get_conversation_service(request: Request) -> ConversationService:
             url=settings.nvidia_llm_url,
             model=settings.nvidia_llm_model,
         ),
-        asr=NemotronASRClient(http, api_key=settings.nvidia_api_key, url=settings.nvidia_asr_url),
+        asr=AzureSTTClient(
+            http, key=settings.azure_speech_key, region=settings.azure_speech_region
+        ),
         tts=TTSClient(
             http,
             key=settings.azure_speech_key,

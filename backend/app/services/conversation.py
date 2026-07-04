@@ -28,9 +28,9 @@ from app.schemas.conversation import (
 from app.schemas.plans import Plan
 from app.services import goals as goals_service
 from app.services import progress as progress_service
+from app.services.ai.azure_stt import AzureSTTClient
 from app.services.ai.base import AIServiceError
 from app.services.ai.llama_chat import LlamaChatClient
-from app.services.ai.nemotron_asr import NemotronASRClient
 from app.services.ai.tts import TTSClient
 from app.services.quota import Metric, ensure_within_quota
 
@@ -45,7 +45,7 @@ class ConversationService:
         self,
         db: Database,
         llama: LlamaChatClient,
-        asr: NemotronASRClient,
+        asr: AzureSTTClient,
         tts: TTSClient,
     ):
         self._db = db

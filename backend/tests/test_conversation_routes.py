@@ -16,7 +16,10 @@ from tests.factories import (
 
 LLM_URL = "http://nvidia.test/llm"
 TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
-ASR_URL = "http://nvidia.test/asr"
+ASR_URL = (
+    "https://koreacentral.stt.speech.microsoft.com"
+    "/speech/recognition/conversation/cognitiveservices/v1"
+)
 
 VALID_TURN = {
     "ai_response_hangul": "네! 사이즈는 어떤 걸로 드릴까요?",
@@ -155,7 +158,9 @@ def test_turn_transcribes_audio_via_asr(client):
     mock_get("scenario_prompts", [prompt_row()])
     mock_get("conversation_messages", [])
     respx.mock.post(ASR_URL).mock(
-        return_value=httpx.Response(200, json={"text": "카드로 할게요"})
+        return_value=httpx.Response(
+            200, json={"RecognitionStatus": "Success", "DisplayText": "카드로 할게요"}
+        )
     )
     respx.mock.post(f"{SUPABASE_REST}/conversation_messages").mock(
         return_value=httpx.Response(201, json=[message_row()])

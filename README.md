@@ -2,7 +2,7 @@
 
 HanVoice is a mobile-first PWA that teaches beginners **spoken** Korean: tiny phrase
 chunks scored by Azure pronunciation assessment, AI café conversations with Minji the
-barista (NVIDIA ASR → Llama, Azure TTS), and Hangul handwriting checks (Nemotron-VL).
+barista (Azure STT → Llama → Azure TTS), and Hangul handwriting checks (Nemotron-VL).
 Free tier, $69 lifetime Founder Pass, or $14.99/mo Premium — enforced by daily quotas.
 
 **Stack:** React 19 / TypeScript / Tailwind v4 / Vite PWA · FastAPI / Python 3.12 ·
@@ -42,8 +42,8 @@ Or run both with Docker: `cp .env.example .env`, fill it in, then `docker compos
 | `SUPABASE_URL` | backend | ✅ | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | backend | ✅ | Server-side DB access (bypasses RLS — backend only) |
 | `SUPABASE_JWT_SECRET` | backend | ✅ | Verifies user access tokens (HS256) |
-| `AZURE_SPEECH_KEY` / `AZURE_SPEECH_REGION` | backend | for pronunciation | Azure pronunciation assessment + Korean neural TTS |
-| `NVIDIA_API_KEY` | backend | for conversations/writing | ASR, Llama chat, vision |
+| `AZURE_SPEECH_KEY` / `AZURE_SPEECH_REGION` | backend | for speech features | Pronunciation scoring, speech-to-text, Korean neural TTS |
+| `NVIDIA_API_KEY` | backend | for conversations/writing | Llama chat, handwriting vision |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_*` | backend | optional | Billing (routes return 503 when unset) |
 | `APP_ENV`, `LOG_LEVEL`, `CORS_ORIGINS`, `FRONTEND_URL` | backend | defaults | App config |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | frontend | ✅ | Client auth + public reads (baked in at build) |

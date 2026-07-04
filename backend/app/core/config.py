@@ -35,13 +35,13 @@ class Settings(BaseSettings):
     azure_speech_region: str = ""
     azure_tts_voice: str = "ko-KR-SunHiNeural"
 
-    # NVIDIA-hosted models (OpenAI-compatible endpoints unless noted)
+    # NVIDIA-hosted models (OpenAI-compatible chat endpoint; NVIDIA's speech
+    # models are gRPC-only, so ASR/TTS live on Azure Speech instead)
     nvidia_api_key: str = ""
-    nvidia_asr_url: str = "https://integrate.api.nvidia.com/v1/audio/transcriptions"
     nvidia_llm_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
     nvidia_llm_model: str = "meta/llama-3.1-70b-instruct"
     nvidia_vision_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
-    nvidia_vision_model: str = "nvidia/nemotron-nano-vl-8b-v1"
+    nvidia_vision_model: str = "nvidia/llama-3.1-nemotron-nano-vl-8b-v1"
 
     # Stripe (optional — billing routes 503 when unconfigured)
     stripe_secret_key: str = ""
