@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* HanVoice design tokens — "hanji & taegeuk".
+   Paper (hanji) base, ink text. The taegeuk pair is functional, not
+   decorative: red belongs to *speaking* (record, live, scores being earned),
+   blue belongs to *learning* (navigation, lessons, progress). */
+@theme {
+  --color-paper: #f6f4ef;
+  --color-paper-raised: #fffdf8;
+  --color-ink: #23262c;
+  --color-ink-soft: #6b6f78;
+  --color-line: #e5e1d5;
+  --color-taegeuk-red: #c73e3a;
+  --color-taegeuk-red-deep: #a92f2c;
+  --color-taegeuk-blue: #2c4e8a;
+  --color-taegeuk-blue-deep: #223d6d;
+  --color-jade: #3e8e7e;
+
+  --font-sans:
+    "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    system-ui, sans-serif;
+
+  --radius-card: 1rem;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hangul display text — the app's real "display face". */
+.hangul-display {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+/* The speak ring: breathing halo while recording. */
+@keyframes speak-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(199 62 58 / 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgb(199 62 58 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(199 62 58 / 0);
+  }
+}
+
+.speak-ring-active {
+  animation: speak-ring 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speak-ring-active {
+    animation: none;
+    outline: 3px solid rgb(199 62 58 / 0.4);
+    outline-offset: 4px;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-taegeuk-blue);
+  outline-offset: 2px;
+}
