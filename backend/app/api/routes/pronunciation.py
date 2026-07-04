@@ -4,11 +4,12 @@ Order of operations is cost-driven: rate limit → quota gate → Azure call →
 persist → meter. A learner over quota never costs us an Azure call.
 """
 
+import base64
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from app.api.deps import AzureClient, CurrentUser, Db
+from app.api.deps import AzureClient, CurrentUser, Db, Tts
 from app.core.errors import BadRequestError
 from app.core.ratelimit import rate_limit
 from app.db.repositories import attempts, content
@@ -71,3 +72,20 @@ async def create_pronunciation_attempt(
     return PronunciationAttemptResponse(
         attempt_id=int(attempt["id"]), target_text=reference_text, scores=scores
     )
+
+
+@router.get(
+    "/pronunciation/phrases/{phrase_id}/audio",
+    dependencies=[Depends(rate_limit(max_requests=30, window_seconds=60))],
+)
+async def get_phrase_audio(
+    phrase_id: int, user: CurrentUser, db: Db, tts: Tts
+) -> dict[str, str]:
+    """Reference pronunciation for a phrase, synthesized on demand.
+
+    Locked to known phrase ids — never arbitrary text — so the TTS spend is
+    bounded by our own content. Not quota-metered: listening is learning.
+    """
+    phrase = await content.get_phrase(db, phrase_id)
+    audio = await tts.synthesize(str(phrase["hangul"]))
+    return {"audio_base64": base64.b64encode(audio).decode()}

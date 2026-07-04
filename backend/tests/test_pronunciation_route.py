@@ -115,3 +115,27 @@ def test_requires_phrase_or_target(client):
         files={"audio": ("take.wav", b"RIFF", "audio/wav")},
     )
     assert response.status_code == 400
+
+
+TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
+
+
+@respx.mock
+def test_phrase_audio_returns_base64_tts(client):
+    mock_get("lesson_phrases", [phrase_row()])
+    tts = respx.mock.post(TTS_URL).mock(
+        return_value=httpx.Response(200, content=b"ID3mp3bytes")
+    )
+    response = client.get("/api/pronunciation/phrases/1/audio", headers=auth_headers())
+    assert response.status_code == 200
+    import base64
+
+    assert base64.b64decode(response.json()["audio_base64"]) == b"ID3mp3bytes"
+    assert "아이스 아메리카노 주세요" in tts.calls[0].request.content.decode()
+
+
+@respx.mock
+def test_phrase_audio_unknown_phrase_404(client):
+    mock_get("lesson_phrases", [])
+    response = client.get("/api/pronunciation/phrases/999/audio", headers=auth_headers())
+    assert response.status_code == 404

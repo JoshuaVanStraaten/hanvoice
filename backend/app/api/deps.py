@@ -68,6 +68,16 @@ def get_vision_client(request: Request) -> NemotronVisionClient:
     )
 
 
+def get_tts_client(request: Request) -> TTSClient:
+    settings: Settings = request.state.settings
+    return TTSClient(
+        request.state.http,
+        key=settings.azure_speech_key,
+        region=settings.azure_speech_region,
+        voice=settings.azure_tts_voice,
+    )
+
+
 def get_conversation_service(request: Request) -> ConversationService:
     settings: Settings = request.state.settings
     http = request.state.http
@@ -98,6 +108,7 @@ AppSettings = Annotated[Settings, Depends(get_app_settings)]
 Http = Annotated[httpx.AsyncClient, Depends(get_http)]
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
 AzureClient = Annotated[AzurePronunciationClient, Depends(get_azure_client)]
+Tts = Annotated[TTSClient, Depends(get_tts_client)]
 VisionClient = Annotated[NemotronVisionClient, Depends(get_vision_client)]
 Conversations = Annotated[ConversationService, Depends(get_conversation_service)]
 Billing = Annotated[BillingService, Depends(get_billing_service)]

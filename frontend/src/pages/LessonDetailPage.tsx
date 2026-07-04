@@ -9,13 +9,14 @@ import { RecordButton } from "../components/RecordButton";
 import { Card, ErrorNote, ScoreRing, Spinner } from "../components/ui";
 import { useActivityInvalidation, useLesson } from "../hooks/queries";
 import { useRecorder } from "../hooks/useRecorder";
-import { apiPostForm } from "../lib/api";
+import { apiGet, apiPostForm } from "../lib/api";
 import { extensionFor } from "../lib/audio";
 import type { LessonPhrase, PronunciationAttempt } from "../lib/types";
 
 interface WordScore {
   word: string;
   accuracy: number | null;
+  errorType: string | null;
 }
 
 /** Azure's per-word payload comes through raw; pull out what we render. */
@@ -30,8 +31,31 @@ function parseWords(words: Array<Record<string, unknown>>): WordScore[] {
       typeof assessment?.["AccuracyScore"] === "number"
         ? assessment["AccuracyScore"]
         : null;
-    return [{ word, accuracy }];
+    const errorType =
+      typeof assessment?.["ErrorType"] === "string" ? assessment["ErrorType"] : null;
+    return [{ word, accuracy, errorType }];
   });
+}
+
+/** One concrete, actionable line about what to fix — not just numbers. */
+function feedbackLine(attempt: PronunciationAttempt, words: WordScore[]): string | null {
+  const omitted = words.filter((w) => w.errorType === "Omission");
+  if (omitted.length > 0) {
+    return `We didn't hear ${omitted.map((w) => w.word).join(", ")} — say the whole phrase.`;
+  }
+  const scored = words.filter((w) => w.accuracy !== null);
+  const weakest = scored.reduce<WordScore | null>(
+    (lowest, w) =>
+      lowest === null || (w.accuracy ?? 100) < (lowest.accuracy ?? 100) ? w : lowest,
+    null,
+  );
+  if (weakest && (weakest.accuracy ?? 100) < 80) {
+    return `Focus on “${weakest.word}” (${Math.round(weakest.accuracy ?? 0)}) — tap ▶ to hear it, then try again.`;
+  }
+  if (attempt.scores.fluency < 70) {
+    return "Good sounds — now say it in one smooth breath, without pausing between words.";
+  }
+  return null;
 }
 
 function wordChipClass(accuracy: number | null): string {
@@ -43,6 +67,7 @@ function wordChipClass(accuracy: number | null): string {
 
 function AttemptResult({ attempt }: { attempt: PronunciationAttempt }) {
   const words = parseWords(attempt.scores.words);
+  const feedback = feedbackLine(attempt, words);
   return (
     <div className="space-y-3 border-t border-line pt-3">
       <div className="flex justify-center gap-3">
@@ -67,16 +92,69 @@ function AttemptResult({ attempt }: { attempt: PronunciationAttempt }) {
           ))}
         </div>
       )}
+      {attempt.scores.recognized_text &&
+        attempt.scores.recognized_text.replace(/[.?!\s]/g, "") !==
+          attempt.target_text.replace(/[.?!\s]/g, "") && (
+          <p className="text-center text-sm text-ink-soft">
+            We heard:{" "}
+            <span lang="ko" className="font-semibold text-ink">
+              {attempt.scores.recognized_text}
+            </span>
+          </p>
+        )}
+      {feedback && <p className="text-center text-sm text-ink-soft">{feedback}</p>}
       {attempt.scores.overall >= 60 ? (
         <p className="text-center text-sm font-semibold text-jade">
           통과! That one counts as passed.
         </p>
       ) : (
-        <p className="text-center text-sm text-ink-soft">
-          Almost — listen to the low-scoring words and try again.
-        </p>
+        <p className="text-center text-sm text-ink-soft">Almost — try again.</p>
       )}
     </div>
+  );
+}
+
+/** Plays the reference pronunciation (Azure TTS), fetched once then cached. */
+function ListenButton({ phraseId, hangul }: { phraseId: number; hangul: string }) {
+  const [audio, setAudio] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function play() {
+    if (pending) return;
+    let base64 = audio;
+    if (!base64) {
+      setPending(true);
+      try {
+        const response = await apiGet<{ audio_base64: string }>(
+          `/pronunciation/phrases/${phraseId}/audio`,
+        );
+        base64 = response.audio_base64;
+        setAudio(base64);
+      } catch {
+        return; // listening is optional — fail quietly, the phrase text remains
+      } finally {
+        setPending(false);
+      }
+    }
+    void new Audio(`data:audio/mpeg;base64,${base64}`).play().catch(() => undefined);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void play()}
+      disabled={pending}
+      aria-label={`Hear ${hangul} pronounced`}
+      className="flex size-9 items-center justify-center rounded-full bg-taegeuk-blue/10 text-taegeuk-blue transition-colors hover:bg-taegeuk-blue/20 disabled:opacity-50"
+    >
+      {pending ? (
+        <span className="size-2 animate-pulse rounded-full bg-taegeuk-blue" aria-hidden />
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M8 5.5v13l11-6.5z" />
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -100,7 +178,7 @@ function PhraseCard({
   return (
     <Card className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="hangul-display text-2xl" lang="ko">
             {phrase.hangul}
           </p>
@@ -108,12 +186,15 @@ function PhraseCard({
             {phrase.romanized} · {phrase.english}
           </p>
         </div>
-        <RecordButton
-          isRecording={isActive && isRecording}
-          onPress={onPress}
-          disabled={isScoring || (isRecording && !isActive)}
-          level={level}
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          <ListenButton phraseId={phrase.id} hangul={phrase.hangul} />
+          <RecordButton
+            isRecording={isActive && isRecording}
+            onPress={onPress}
+            disabled={isScoring || (isRecording && !isActive)}
+            level={level}
+          />
+        </div>
       </div>
       {isActive && isScoring && <Spinner label="Scoring your pronunciation" />}
       {attempt && <AttemptResult attempt={attempt} />}

@@ -89,9 +89,12 @@ export function WritingPage() {
   }
 
   function handlePointerUp() {
-    if (currentStroke.current.length === 0) return;
-    setStrokes((existing) => [...existing, currentStroke.current]);
+    // Capture before clearing the ref: the state updater runs *after* this
+    // handler returns, and must not read the already-emptied ref.
+    const stroke = currentStroke.current;
+    if (stroke.length === 0) return;
     currentStroke.current = [];
+    setStrokes((existing) => [...existing, stroke]);
   }
 
   function updateStrokes(next: Stroke[]) {
