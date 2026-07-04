@@ -8,8 +8,8 @@ class LessonProgressItem(BaseModel):
     lesson_slug: str
     lesson_title: str
     status: Literal["in_progress", "completed"]
-    phrases_completed: int
-    phrase_count: int
+    blocks_completed: int
+    block_count: int
     best_pronunciation_score: float | None = None
 
 

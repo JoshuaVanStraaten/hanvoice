@@ -54,24 +54,6 @@ async def insert_handwriting_attempt(
     return rows[0]
 
 
-async def list_passed_phrase_ids(
-    db: Database, user_id: UUID, phrase_ids: list[int], threshold: float
-) -> set[int]:
-    """Distinct phrases (of the given set) the user has ever scored >= threshold on."""
-    if not phrase_ids:
-        return set()
-    rows = await db.select(
-        "pronunciation_attempts",
-        columns="phrase_id",
-        filters={
-            "user_id": f"eq.{user_id}",
-            "phrase_id": f"in.({','.join(str(p) for p in phrase_ids)})",
-            "overall_score": f"gte.{threshold}",
-        },
-    )
-    return {int(row["phrase_id"]) for row in rows}
-
-
 async def best_lesson_score(
     db: Database, user_id: UUID, phrase_ids: list[int]
 ) -> float | None:

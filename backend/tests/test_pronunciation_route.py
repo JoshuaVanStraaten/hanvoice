@@ -2,7 +2,14 @@ import httpx
 import respx
 
 from tests.conftest import SUPABASE_REST
-from tests.factories import auth_headers, phrase_row, plan_row, usage_row
+from tests.factories import (
+    auth_headers,
+    block_progress_row,
+    block_row,
+    phrase_row,
+    plan_row,
+    usage_row,
+)
 
 AZURE_URL = (
     "https://koreacentral.stt.speech.microsoft.com"
@@ -58,7 +65,10 @@ def test_pronunciation_attempt_happy_path(client):
     respx.mock.post(f"{SUPABASE_REST}/rpc/increment_daily_usage").mock(
         return_value=httpx.Response(200, json=usage_row(pronunciation_attempts=1))
     )
-    # Progress rollup reads attempts and upserts lesson_progress.
+    # A passing attempt marks the phrase's speak block, then refreshes rollups.
+    mock_get("lesson_blocks", [block_row(7, "speak", phrase_id=1, payload={})])
+    mock_get("lesson_block_progress", [block_progress_row(7)])
+    block_upsert = mock_post("lesson_block_progress", [block_progress_row(7)])
     mock_get("pronunciation_attempts", [{"phrase_id": 1, "overall_score": 87.5}])
     mock_post("lesson_progress", [{"id": 1}])
 
@@ -75,6 +85,7 @@ def test_pronunciation_attempt_happy_path(client):
     assert body["scores"]["overall"] == 87.5
     assert azure.call_count == 1
     assert attempt_insert.call_count == 1
+    assert block_upsert.call_count == 1
 
 
 @respx.mock

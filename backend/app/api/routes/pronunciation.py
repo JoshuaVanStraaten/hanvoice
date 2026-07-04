@@ -67,7 +67,9 @@ async def create_pronunciation_attempt(
     )
     await usage_repo.increment(db, user.id, pronunciation=1)
     if phrase is not None:
-        await progress_service.update_after_pronunciation(db, user.id, phrase)
+        await progress_service.update_after_pronunciation(
+            db, user.id, phrase, scores.overall
+        )
 
     return PronunciationAttemptResponse(
         attempt_id=int(attempt["id"]), target_text=reference_text, scores=scores

@@ -20,15 +20,15 @@ async def get_progress(user: CurrentUser, db: Db) -> ProgressResponse:
         lesson = lessons.get(int(row["lesson_id"]))
         if lesson is None:
             continue  # progress on an unpublished/removed lesson stays hidden
-        phrases = await content.list_lesson_phrases(db, int(lesson["id"]))
+        blocks = await content.list_lesson_blocks(db, int(lesson["id"]))
         lesson_items.append(
             LessonProgressItem(
                 lesson_id=int(lesson["id"]),
                 lesson_slug=str(lesson["slug"]),
                 lesson_title=str(lesson["title"]),
                 status=row["status"],
-                phrases_completed=int(row["phrases_completed"]),
-                phrase_count=len(phrases),
+                blocks_completed=int(row["blocks_completed"]),
+                block_count=len(blocks),
                 best_pronunciation_score=row.get("best_pronunciation_score"),
             )
         )

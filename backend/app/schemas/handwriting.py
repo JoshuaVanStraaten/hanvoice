@@ -14,6 +14,9 @@ class HandwritingScores(BaseModel):
 class HandwritingAttemptRequest(BaseModel):
     target_text: str = Field(min_length=1, max_length=40)
     image_base64: str = Field(min_length=1, description="PNG data, base64 (no data: prefix)")
+    block_id: int | None = Field(
+        default=None, description="Write block this attempt answers, if inside a lesson"
+    )
 
 
 class HandwritingAttemptResponse(BaseModel):

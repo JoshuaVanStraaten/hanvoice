@@ -103,7 +103,32 @@ def lesson_row(lesson_id: int = 1, **overrides: Any) -> dict[str, Any]:
         "slug": "cafe-essentials",
         "title": "Café essentials",
         "description": "The handful of phrases that get you through any Seoul café.",
+        "section": "Speak",
         "sort_order": 1,
+        **overrides,
+    }
+
+
+def block_row(block_id: int = 1, kind: str = "explain", **overrides: Any) -> dict[str, Any]:
+    return {
+        "id": block_id,
+        "lesson_id": 1,
+        "kind": kind,
+        "phrase_id": None,
+        "payload": {"segments": [{"type": "text", "body": "Hangul is an alphabet."}]},
+        "sort_order": block_id,
+        **overrides,
+    }
+
+
+def block_progress_row(block_id: int = 1, **overrides: Any) -> dict[str, Any]:
+    return {
+        "id": 1,
+        "user_id": TEST_USER_ID,
+        "block_id": block_id,
+        "passed": True,
+        "best_score": None,
+        "passed_at": "2026-07-04T10:00:00+00:00",
         **overrides,
     }
 
