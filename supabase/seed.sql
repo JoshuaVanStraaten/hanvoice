@@ -7,12 +7,13 @@
 -- ---------------------------------------------------------------------------
 
 with lesson as (
-  insert into public.lessons (slug, title, description, sort_order, is_published)
+  insert into public.lessons (slug, title, description, section, sort_order, is_published)
   values (
     'cafe-essentials',
     'Café essentials',
     'The handful of phrases that get you through any Seoul café.',
-    1,
+    'Speak',
+    11,
     true
   )
   returning id
@@ -109,9 +110,9 @@ from scenario;
 -- ---------------------------------------------------------------------------
 
 with l as (
-  insert into public.lessons (slug, title, description, sort_order, is_published)
+  insert into public.lessons (slug, title, description, section, sort_order, is_published)
   values ('first-meetings', 'First meetings',
-          'Introduce yourself and survive the first thirty seconds of any conversation.', 2, true)
+          'Introduce yourself and survive the first thirty seconds of any conversation.', 'Speak', 12, true)
   returning id
 )
 insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
@@ -124,9 +125,9 @@ select l.id, p.* from l, (values
 ) as p (hangul, romanized, english, sort_order);
 
 with l as (
-  insert into public.lessons (slug, title, description, sort_order, is_published)
+  insert into public.lessons (slug, title, description, section, sort_order, is_published)
   values ('restaurant-basics', 'Restaurant basics',
-          'Order food, ask for water, and pay — the full restaurant loop.', 3, true)
+          'Order food, ask for water, and pay — the full restaurant loop.', 'Speak', 13, true)
   returning id
 )
 insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
@@ -139,9 +140,9 @@ select l.id, p.* from l, (values
 ) as p (hangul, romanized, english, sort_order);
 
 with l as (
-  insert into public.lessons (slug, title, description, sort_order, is_published)
+  insert into public.lessons (slug, title, description, section, sort_order, is_published)
   values ('getting-around', 'Getting around',
-          'Find the bathroom, the subway, and your way back — politely.', 4, true)
+          'Find the bathroom, the subway, and your way back — politely.', 'Speak', 14, true)
   returning id
 )
 insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
@@ -154,9 +155,9 @@ select l.id, p.* from l, (values
 ) as p (hangul, romanized, english, sort_order);
 
 with l as (
-  insert into public.lessons (slug, title, description, sort_order, is_published)
+  insert into public.lessons (slug, title, description, section, sort_order, is_published)
   values ('money-talk', 'Money talk',
-          'Numbers, cards, cash, and the gentle art of asking for a discount.', 5, true)
+          'Numbers, cards, cash, and the gentle art of asking for a discount.', 'Speak', 15, true)
   returning id
 )
 insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
@@ -167,3 +168,12 @@ select l.id, p.* from l, (values
   ('너무 비싸요', 'neomu bissayo', 'That''s too expensive', 4),
   ('깎아 주세요', 'kkakka juseyo', 'Could you give me a discount?', 5)
 ) as p (hangul, romanized, english, sort_order);
+
+-- ---------------------------------------------------------------------------
+-- Speak blocks: every phrase is one speak block. On a fresh database the
+-- lesson_blocks migration backfill ran before seed and found nothing, so the
+-- blocks are created here. Keep this statement LAST, after all phrase inserts.
+-- ---------------------------------------------------------------------------
+
+insert into public.lesson_blocks (lesson_id, kind, phrase_id, sort_order)
+select lesson_id, 'speak', id, sort_order from public.lesson_phrases;
