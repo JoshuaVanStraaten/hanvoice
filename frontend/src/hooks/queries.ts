@@ -3,7 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiGet, apiPatch, apiPost } from "../lib/api";
+import { supabase } from "../lib/supabase";
 import type {
+  Plan,
   LessonDetail,
   LessonSummary,
   Me,
@@ -15,6 +17,29 @@ import type {
 
 export function useMe() {
   return useQuery({ queryKey: ["me"], queryFn: () => apiGet<Me>("/me") });
+}
+
+/** Public pricing — anon RLS read; the landing page shows this pre-signup. */
+export function usePlans() {
+  return useQuery({
+    queryKey: ["plans"],
+    queryFn: async (): Promise<Plan[]> => {
+      const { data, error } = await supabase
+        .from("plans")
+        .select("*")
+        .order("price_usd_cents", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as Plan[];
+    },
+    staleTime: 60 * 60_000,
+  });
+}
+
+export function useJoinWaitlist() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      apiPost<{ status: string }>("/waitlist", { email, source: "landing" }),
+  });
 }
 
 export function useUsageToday() {
