@@ -9,12 +9,27 @@ import json
 from typing import Any
 
 import httpx
+import structlog
 
 from app.core.errors import ServiceUnavailableError
 from app.schemas.pronunciation import PronunciationScores
 from app.services.ai.base import AIServiceError, post_with_retry
 
 _PROVIDER = "azure-pronunciation"
+
+logger = structlog.get_logger(__name__)
+
+
+def _normalize_word(word: dict[str, Any]) -> dict[str, Any]:
+    """Both API shapes → the nested one the stored payload/frontend expect."""
+    assessment = word.get("PronunciationAssessment", word)
+    return {
+        "Word": word.get("Word", ""),
+        "PronunciationAssessment": {
+            "AccuracyScore": assessment.get("AccuracyScore"),
+            "ErrorType": assessment.get("ErrorType"),
+        },
+    }
 
 
 class AzurePronunciationClient:
@@ -52,7 +67,9 @@ class AzurePronunciationClient:
             self._http,
             url,
             provider=_PROVIDER,
-            params={"language": "ko-KR"},
+            # format=detailed is required: the default "simple" response has
+            # no NBest array and silently drops the assessment scores.
+            params={"language": "ko-KR", "format": "detailed"},
             headers={
                 "Ocp-Apim-Subscription-Key": self._key,
                 "Pronunciation-Assessment": assessment_config,
@@ -66,19 +83,26 @@ class AzurePronunciationClient:
 
     @staticmethod
     def _parse(payload: dict[str, Any]) -> PronunciationScores:
-        if payload.get("RecognitionStatus") != "Success":
+        status = payload.get("RecognitionStatus")
+        if status != "Success":
+            logger.warning("azure_recognition_failed", status=status)
             raise AIServiceError(
                 "We couldn't hear any speech in that recording — try again a bit louder."
             )
         try:
             best = payload["NBest"][0]
+            # The short-audio v1 endpoint returns scores flat on the NBest
+            # entry; newer API versions nest them under
+            # "PronunciationAssessment". Accept both.
+            scores = best.get("PronunciationAssessment", best)
             return PronunciationScores(
-                accuracy=best["PronunciationAssessment"]["AccuracyScore"],
-                fluency=best["PronunciationAssessment"]["FluencyScore"],
-                completeness=best["PronunciationAssessment"]["CompletenessScore"],
-                overall=best["PronunciationAssessment"]["PronScore"],
+                accuracy=scores["AccuracyScore"],
+                fluency=scores["FluencyScore"],
+                completeness=scores["CompletenessScore"],
+                overall=scores["PronScore"],
                 recognized_text=best.get("Display", ""),
-                words=best.get("Words", []),
+                words=[_normalize_word(word) for word in best.get("Words", [])],
             )
         except (KeyError, IndexError) as exc:
+            logger.error("azure_payload_unexpected", keys=sorted(payload.keys()))
             raise AIServiceError("Azure returned an unexpected payload.") from exc

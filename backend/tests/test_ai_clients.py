@@ -80,6 +80,36 @@ async def test_azure_parses_scores(http):
 
 
 @respx.mock
+async def test_azure_parses_flat_short_audio_shape(http):
+    # The short-audio v1 endpoint puts scores directly on the NBest entry
+    # (no nested PronunciationAssessment) — observed live, must keep working.
+    payload = {
+        "RecognitionStatus": "Success",
+        "NBest": [
+            {
+                "Display": "안녕하세요",
+                "AccuracyScore": 81.0,
+                "FluencyScore": 95.0,
+                "CompletenessScore": 100.0,
+                "PronScore": 86.2,
+                "Words": [{"Word": "안녕하세요", "AccuracyScore": 81.0, "ErrorType": "None"}],
+            }
+        ],
+    }
+    respx.mock.post(AZURE_URL).mock(return_value=httpx.Response(200, json=payload))
+    client = AzurePronunciationClient(http, key="k", region="koreacentral")
+
+    scores = await client.assess(b"RIFF...", "안녕하세요")
+
+    assert scores.overall == 86.2
+    assert scores.accuracy == 81.0
+    # Words come out normalized to the nested shape the frontend renders.
+    assert scores.words[0]["PronunciationAssessment"]["AccuracyScore"] == 81.0
+    request = respx.mock.calls[0].request
+    assert request.url.params["format"] == "detailed"
+
+
+@respx.mock
 async def test_azure_no_speech_is_client_presentable_error(http):
     respx.mock.post(AZURE_URL).mock(
         return_value=httpx.Response(200, json={"RecognitionStatus": "NoMatch"})
