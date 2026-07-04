@@ -103,3 +103,67 @@ You: {"ai_response_hangul": "사천오백 원이에요. 카드로 하시겠어�
 
 Begin the scene now. The customer has just walked up to your counter. Remember: ONLY the JSON object, every single turn.$prompt$, true
 from scenario;
+
+-- ---------------------------------------------------------------------------
+-- Lessons 2-5: beginner spoken-Korean curriculum (added 2026-07-04)
+-- ---------------------------------------------------------------------------
+
+with l as (
+  insert into public.lessons (slug, title, description, sort_order, is_published)
+  values ('first-meetings', 'First meetings',
+          'Introduce yourself and survive the first thirty seconds of any conversation.', 2, true)
+  returning id
+)
+insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
+select l.id, p.* from l, (values
+  ('만나서 반가워요', 'mannaseo bangawoyo', 'Nice to meet you', 1),
+  ('이름이 뭐예요?', 'ireumi mwoyeyo?', 'What''s your name?', 2),
+  ('저는 알렉스예요', 'jeoneun allekseuyeyo', 'I''m Alex (swap in your name!)', 3),
+  ('어느 나라에서 왔어요?', 'eoneu naraeseo wasseoyo?', 'Which country are you from?', 4),
+  ('한국어 조금 해요', 'hangugeo jogeum haeyo', 'I speak a little Korean', 5)
+) as p (hangul, romanized, english, sort_order);
+
+with l as (
+  insert into public.lessons (slug, title, description, sort_order, is_published)
+  values ('restaurant-basics', 'Restaurant basics',
+          'Order food, ask for water, and pay — the full restaurant loop.', 3, true)
+  returning id
+)
+insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
+select l.id, p.* from l, (values
+  ('메뉴 좀 주세요', 'menyu jom juseyo', 'Could I get the menu, please?', 1),
+  ('이거 주세요', 'igeo juseyo', 'This one, please', 2),
+  ('물 좀 주세요', 'mul jom juseyo', 'Some water, please', 3),
+  ('너무 맛있어요', 'neomu masisseoyo', 'It''s really delicious', 4),
+  ('계산할게요', 'gyesanhalgeyo', 'I''d like to pay', 5)
+) as p (hangul, romanized, english, sort_order);
+
+with l as (
+  insert into public.lessons (slug, title, description, sort_order, is_published)
+  values ('getting-around', 'Getting around',
+          'Find the bathroom, the subway, and your way back — politely.', 4, true)
+  returning id
+)
+insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
+select l.id, p.* from l, (values
+  ('죄송합니다', 'joesonghamnida', 'Excuse me / I''m sorry', 1),
+  ('화장실이 어디예요?', 'hwajangsiri eodiyeyo?', 'Where''s the bathroom?', 2),
+  ('지하철역이 어디예요?', 'jihacheollyeogi eodiyeyo?', 'Where''s the subway station?', 3),
+  ('여기서 멀어요?', 'yeogiseo meoreoyo?', 'Is it far from here?', 4),
+  ('천천히 말해 주세요', 'cheoncheonhi malhae juseyo', 'Please speak slowly', 5)
+) as p (hangul, romanized, english, sort_order);
+
+with l as (
+  insert into public.lessons (slug, title, description, sort_order, is_published)
+  values ('money-talk', 'Money talk',
+          'Numbers, cards, cash, and the gentle art of asking for a discount.', 5, true)
+  returning id
+)
+insert into public.lesson_phrases (lesson_id, hangul, romanized, english, sort_order)
+select l.id, p.* from l, (values
+  ('하나, 둘, 셋', 'hana, dul, set', 'One, two, three', 1),
+  ('카드 돼요?', 'kadeu dwaeyo?', 'Do you take card?', 2),
+  ('현금으로 할게요', 'hyeongeumeuro halgeyo', 'I''ll pay in cash', 3),
+  ('너무 비싸요', 'neomu bissayo', 'That''s too expensive', 4),
+  ('깎아 주세요', 'kkakka juseyo', 'Could you give me a discount?', 5)
+) as p (hangul, romanized, english, sort_order);

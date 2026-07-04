@@ -1,7 +1,8 @@
 /** Hangul handwriting practice. The canvas is transparent with a faint
  * tracing guide *behind* it — export composites strokes onto clean white so
- * the vision model never sees the guide. Targets spell out the phrases the
- * learner already says: 안녕하세요, 감사합니다. */
+ * the vision model never sees the guide. The curriculum builds up the way
+ * Hangul does: basic vowels → basic consonants → the syllables of the
+ * phrases the learner already says (안녕하세요, 감사합니다). */
 
 import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -11,7 +12,31 @@ import { useActivityInvalidation } from "../hooks/queries";
 import { apiPost } from "../lib/api";
 import type { HandwritingAttempt } from "../lib/types";
 
-const TARGETS = ["안", "녕", "하", "세", "요", "감", "사", "합", "니", "다"];
+interface TargetGroup {
+  label: string;
+  hint: string;
+  targets: string[];
+}
+
+const TARGET_GROUPS: TargetGroup[] = [
+  {
+    label: "Vowels · 모음",
+    hint: "The six basic vowels — vertical and horizontal lines with ticks.",
+    targets: ["ㅏ", "ㅓ", "ㅗ", "ㅜ", "ㅡ", "ㅣ"],
+  },
+  {
+    label: "Consonants · 자음",
+    hint: "The most common consonants — each shape mimics your mouth making it.",
+    targets: ["ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅎ"],
+  },
+  {
+    label: "Syllables · 글자",
+    hint: "Full syllable blocks from phrases you already speak.",
+    targets: ["안", "녕", "하", "세", "요", "감", "사", "합", "니", "다"],
+  },
+];
+
+const TARGETS = TARGET_GROUPS.flatMap((group) => group.targets);
 const CANVAS_SIZE = 320; // CSS px; internal resolution scales with DPR
 
 type Stroke = Array<{ x: number; y: number }>;
@@ -128,24 +153,47 @@ export function WritingPage() {
         </p>
       </header>
 
-      {/* Target picker */}
-      <div className="flex flex-wrap gap-1.5" aria-label="Choose a character">
-        {TARGETS.map((char, index) => (
-          <button
-            key={`${char}-${index}`}
-            type="button"
-            lang="ko"
-            onClick={() => selectTarget(index)}
-            aria-pressed={index === targetIndex}
-            className={`hangul-display size-10 rounded-lg border text-lg ${
-              index === targetIndex
-                ? "border-taegeuk-blue bg-taegeuk-blue/10 text-taegeuk-blue"
-                : "border-line bg-paper-raised text-ink-soft"
-            }`}
-          >
-            {char}
-          </button>
-        ))}
+      {/* Target picker — jamo first, then the syllables they build. */}
+      <div className="space-y-3">
+        {TARGET_GROUPS.map((group, groupIndex) => {
+          const offset = TARGET_GROUPS.slice(0, groupIndex).reduce(
+            (sum, g) => sum + g.targets.length,
+            0,
+          );
+          const isActiveGroup =
+            targetIndex >= offset && targetIndex < offset + group.targets.length;
+          return (
+            <div key={group.label}>
+              <p className="mb-1 text-xs font-semibold text-ink-soft">
+                {group.label}
+                {isActiveGroup && (
+                  <span className="ml-2 font-normal">{group.hint}</span>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-1.5" aria-label={group.label}>
+                {group.targets.map((char, index) => {
+                  const flatIndex = offset + index;
+                  return (
+                    <button
+                      key={char}
+                      type="button"
+                      lang="ko"
+                      onClick={() => selectTarget(flatIndex)}
+                      aria-pressed={flatIndex === targetIndex}
+                      className={`hangul-display size-10 rounded-lg border text-lg ${
+                        flatIndex === targetIndex
+                          ? "border-taegeuk-blue bg-taegeuk-blue/10 text-taegeuk-blue"
+                          : "border-line bg-paper-raised text-ink-soft"
+                      }`}
+                    >
+                      {char}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <Card className="space-y-3">
