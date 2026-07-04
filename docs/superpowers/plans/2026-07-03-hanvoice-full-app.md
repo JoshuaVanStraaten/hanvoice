@@ -92,64 +92,64 @@ frontend: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_URL
 ## Milestones and tasks
 
 ### M1 — Backend foundation
-- [ ] `backend/pyproject.toml` (fastapi, uvicorn, httpx, pydantic-settings, pyjwt, structlog, stripe; dev: pytest, pytest-asyncio, respx, ruff, mypy)
-- [ ] `app/core/config.py` Settings with the env contract above; test that missing required vars fail loudly
-- [ ] `app/core/errors.py` `AppError(status, code, message)` + handlers returning `{"error": {"code", "message"}}`
-- [ ] `app/core/logging.py` structlog JSON logs + request-id middleware
-- [ ] `app/main.py` `create_app()`; `GET /api/health` returns `{"status": "ok"}`; CORS from settings
-- [ ] Tests: health endpoint, error envelope shape. Run `pytest`, commit.
+- [x] `backend/pyproject.toml` (fastapi, uvicorn, httpx, pydantic-settings, pyjwt, structlog, stripe; dev: pytest, pytest-asyncio, respx, ruff, mypy)
+- [x] `app/core/config.py` Settings with the env contract above; test that missing required vars fail loudly
+- [x] `app/core/errors.py` `AppError(status, code, message)` + handlers returning `{"error": {"code", "message"}}`
+- [x] `app/core/logging.py` structlog JSON logs + request-id middleware
+- [x] `app/main.py` `create_app()`; `GET /api/health` returns `{"status": "ok"}`; CORS from settings
+- [x] Tests: health endpoint, error envelope shape. Run `pytest`, commit.
 
 ### M2 — DB client + auth
-- [ ] `db/client.py`: `Database.select/insert/upsert/update/rpc` (typed thin wrappers, service-role headers, raises `DatabaseError`)
-- [ ] `core/security.py`: verify HS256 JWT (aud `authenticated`), `get_current_user` dependency; tests for expired/garbage/valid tokens
-- [ ] Repositories for profiles + plans; `GET /api/me` (profile + resolved plan) route. Tests with respx. Commit.
+- [x] `db/client.py`: `Database.select/insert/upsert/update/rpc` (typed thin wrappers, service-role headers, raises `DatabaseError`)
+- [x] `core/security.py`: verify HS256 JWT (aud `authenticated`), `get_current_user` dependency; tests for expired/garbage/valid tokens
+- [x] Repositories for profiles + plans; `GET /api/me` (profile + resolved plan) route. Tests with respx. Commit.
 
 ### M3 — Entitlements, quota, usage (pure TDD — this is the money logic)
-- [ ] `services/entitlements.py`: founder → subscription → free resolution; tests cover all branches incl. expired subscription
-- [ ] `services/quota.py`: `ensure_within_quota(usage_row, plan, metric)` raises `QuotaExceeded` (→ HTTP 429 with `quota_exceeded` code)
-- [ ] `services/usage.py`: `record(user_id, **increments)` upsert-increment; `GET /api/usage/today` route. Commit.
+- [x] `services/entitlements.py`: founder → subscription → free resolution; tests cover all branches incl. expired subscription
+- [x] `services/quota.py`: `ensure_within_quota(usage_row, plan, metric)` raises `QuotaExceeded` (→ HTTP 429 with `quota_exceeded` code)
+- [x] `services/usage.py`: `record(user_id, **increments)` upsert-increment; `GET /api/usage/today` route. Commit.
 
 ### M4 — AI clients (each: client class + respx tests for success/timeout/4xx/5xx)
-- [ ] `ai/base.py` — `AIServiceError`, `AIServiceUnavailable`, bounded-retry helper
-- [ ] `ai/azure_pronunciation.py` — `assess(audio_wav: bytes, reference_text: str) -> PronunciationScores` (accuracy/fluency/completeness/overall + phoneme JSON)
-- [ ] `ai/nemotron_asr.py` — `transcribe(audio: bytes) -> str`
-- [ ] `ai/llama_chat.py` — `BaristaTurn` model (4 keys, `extra="forbid"`); `next_turn(system_prompt, transcript) -> tuple[BaristaTurn, TokenUsage]`; repair retry + canned fallback per integration notes; window last 12 turns
-- [ ] `ai/tts.py` — `synthesize(text: str) -> bytes` (audio/mpeg)
-- [ ] `ai/nemotron_vision.py` — `assess_handwriting(image_png: bytes, target: str) -> HandwritingScores`. Commit per client.
+- [x] `ai/base.py` — `AIServiceError`, `AIServiceUnavailable`, bounded-retry helper
+- [x] `ai/azure_pronunciation.py` — `assess(audio_wav: bytes, reference_text: str) -> PronunciationScores` (accuracy/fluency/completeness/overall + phoneme JSON)
+- [x] `ai/nemotron_asr.py` — `transcribe(audio: bytes) -> str`
+- [x] `ai/llama_chat.py` — `BaristaTurn` model (4 keys, `extra="forbid"`); `next_turn(system_prompt, transcript) -> tuple[BaristaTurn, TokenUsage]`; repair retry + canned fallback per integration notes; window last 12 turns
+- [x] `ai/tts.py` — `synthesize(text: str) -> bytes` (audio/mpeg)
+- [x] `ai/nemotron_vision.py` — `assess_handwriting(image_png: bytes, target: str) -> HandwritingScores`. Commit per client.
 
 ### M5 — Feature routes (each: schema + repository + route + tests)
-- [ ] Content: `GET /api/lessons`, `GET /api/lessons/{slug}` (with phrases), `GET /api/scenarios`
-- [ ] Pronunciation: `POST /api/pronunciation/attempts` (multipart audio + phrase_id/target) → quota check → Azure → store attempt → update `lesson_progress` → return scores
-- [ ] Conversations: `POST /api/conversations` (start; loads active scenario prompt, returns Minji's opener), `POST /api/conversations/{id}/turns` (multipart audio or text → ASR → quota → Llama → goals → TTS → store both messages → return turn payload + audio), `POST /api/conversations/{id}/complete`
-- [ ] Handwriting: `POST /api/handwriting/attempts` (base64 PNG + target) → quota → vision → store
-- [ ] Progress: `GET /api/progress` (lesson + scenario rollups)
-- [ ] Waitlist: `POST /api/waitlist` (anon, validated email)
-- [ ] Billing: `POST /api/billing/checkout` (premium|founder), `POST /api/billing/webhook` (signature-verified; writes subscriptions/founder passes)
-- [ ] Rate limiting on pronunciation/turn/handwriting routes. Commit per route group.
+- [x] Content: `GET /api/lessons`, `GET /api/lessons/{slug}` (with phrases), `GET /api/scenarios`
+- [x] Pronunciation: `POST /api/pronunciation/attempts` (multipart audio + phrase_id/target) → quota check → Azure → store attempt → update `lesson_progress` → return scores
+- [x] Conversations: `POST /api/conversations` (start; loads active scenario prompt, returns Minji's opener), `POST /api/conversations/{id}/turns` (multipart audio or text → ASR → quota → Llama → goals → TTS → store both messages → return turn payload + audio), `POST /api/conversations/{id}/complete`
+- [x] Handwriting: `POST /api/handwriting/attempts` (base64 PNG + target) → quota → vision → store
+- [x] Progress: `GET /api/progress` (lesson + scenario rollups)
+- [x] Waitlist: `POST /api/waitlist` (anon, validated email)
+- [x] Billing: `POST /api/billing/checkout` (premium|founder), `POST /api/billing/webhook` (signature-verified; writes subscriptions/founder passes)
+- [x] Rate limiting on pronunciation/turn/handwriting routes. Commit per route group.
 
 ### M6 — Frontend scaffold
-- [ ] Vite + React + TS strict + Tailwind v4 + vite-plugin-pwa (manifest: HanVoice, standalone, icons) + ESLint/Prettier + Vitest
-- [ ] `lib/supabase.ts`, `AuthContext` (session, signIn/signUp/signOut), `lib/api.ts` (typed fetch attaching token, unwraps error envelope), router with protected routes. Commit.
+- [x] Vite + React + TS strict + Tailwind v4 + vite-plugin-pwa (manifest: HanVoice, standalone, icons) + ESLint/Prettier + Vitest
+- [x] `lib/supabase.ts`, `AuthContext` (session, signIn/signUp/signOut), `lib/api.ts` (typed fetch attaching token, unwraps error envelope), router with protected routes. Commit.
 
 ### M7 — Frontend core
-- [ ] Landing page (pricing from `plans` via anon supabase read, waitlist form)
-- [ ] Login/Signup/PasswordReset pages
-- [ ] App shell: mobile-first bottom nav (Home, Lessons, Talk, Write, Profile), top bar, safe-area handling
-- [ ] Dashboard: today's usage meter, continue-lesson card, scenario card. Commit per page group.
+- [x] Landing page (pricing from `plans` via anon supabase read, waitlist form)
+- [x] Login/Signup/PasswordReset pages
+- [x] App shell: mobile-first bottom nav (Home, Lessons, Talk, Write, Profile), top bar, safe-area handling
+- [x] Dashboard: today's usage meter, continue-lesson card, scenario card. Commit per page group.
 
 ### M8 — Frontend features
-- [ ] Lessons list + LessonDetail: phrase cards, `useRecorder` (MediaRecorder → wav/webm), record → POST attempt → score display with per-word feedback
-- [ ] Conversation: start scenario → chat UI (hangul + toggleable romanization/english, correction chips), mic button per turn, TTS audio playback
-- [ ] Writing: HTML5 canvas (touch + pointer), stroke clear/undo, submit → scores + feedback
-- [ ] Progress page: streaks from usage, per-lesson bars, scenario completion
-- [ ] Settings: profile edit, romanization toggle, sign out; Subscription page: plan comparison, checkout buttons, current-plan state. Commit per feature.
+- [x] Lessons list + LessonDetail: phrase cards, `useRecorder` (MediaRecorder → wav/webm), record → POST attempt → score display with per-word feedback
+- [x] Conversation: start scenario → chat UI (hangul + toggleable romanization/english, correction chips), mic button per turn, TTS audio playback
+- [x] Writing: HTML5 canvas (touch + pointer), stroke clear/undo, submit → scores + feedback
+- [x] Progress page: streaks from usage, per-lesson bars, scenario completion
+- [x] Settings: profile edit, romanization toggle, sign out; Subscription page: plan comparison, checkout buttons, current-plan state. Commit per feature.
 
 ### M9 — Infra
-- [ ] `backend/Dockerfile` (multi-stage, uvicorn, non-root), `frontend/Dockerfile` (build → nginx with SPA fallback + caching headers), `docker-compose.yml` (backend + frontend, env passthrough), `.env.example`
-- [ ] `.github/workflows/ci.yml`: backend (ruff, mypy, pytest) + frontend (eslint, tsc, vitest, build) jobs. Commit.
+- [x] `backend/Dockerfile` (multi-stage, uvicorn, non-root), `frontend/Dockerfile` (build → nginx with SPA fallback + caching headers), `docker-compose.yml` (backend + frontend, env passthrough), `.env.example`
+- [x] `.github/workflows/ci.yml`: backend (ruff, mypy, pytest) + frontend (eslint, tsc, vitest, build) jobs. Commit.
 
 ### M10 — Docs
-- [ ] `README.md` (what/why, quickstart, env table), `docs/architecture.md`, `docs/api.md` (endpoint reference; note FastAPI /docs), `docs/deployment.md` (Supabase + Fly/Railway/Render + Vercel/Netlify options, CI/CD recommendation). Final commit.
+- [x] `README.md` (what/why, quickstart, env table), `docs/architecture.md`, `docs/api.md` (endpoint reference; note FastAPI /docs), `docs/deployment.md` (Supabase + Fly/Railway/Render + Vercel/Netlify options, CI/CD recommendation). Final commit.
 
 ## Verification per milestone
 Backend: `cd backend && ruff check . && mypy app && pytest`. Frontend: `cd frontend && npm run lint && npm run typecheck && npm test && npm run build`. Every commit leaves the repo green.
