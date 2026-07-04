@@ -43,6 +43,12 @@ gRPC-only, no REST — don't switch back without a Riva client.
 - **Supabase signs ES256 now:** new projects issue asymmetric tokens with a `kid`;
   the legacy HS256 secret verifies nothing. Backend resolves keys from the JWKS
   endpoint (`core/security.py`, fix `199855f`) with HS256 kept for tests.
+- **VLM handwriting judging is fragile** (`9231a6c`): thin strokes become
+  invisible after the model's downscale (canvas draws 12px now); JSON templates
+  with example `0` values get echoed as scores (prompt lists keys without
+  numbers, demands an observation sentence first); all-zero results retry once.
+  The 8B judge's jamo precision is coarse — v2 candidate: stronger vision model.
+- Test account holds a manually-granted founder pass (200/day quotas) for testing.
 
 - **Vite env DCE:** `import.meta.env.VITE_*` is statically replaced at build; a
   module-level throw on missing env made Rollup eliminate the entire app from the
