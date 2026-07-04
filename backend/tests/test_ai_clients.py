@@ -18,7 +18,7 @@ from app.services.ai.tts import TTSClient
 AZURE_URL = "https://koreacentral.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1"
 LLM_URL = "http://nvidia.test/v1/chat/completions"
 ASR_URL = "http://nvidia.test/v1/audio/transcriptions"
-TTS_URL = "http://nvidia.test/v1/audio/speech"
+TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
 
 
 @pytest.fixture
@@ -208,17 +208,32 @@ async def test_llama_windows_transcript_to_12_turns(http):
 
 @respx.mock
 async def test_tts_returns_audio_bytes(http):
-    respx.mock.post(TTS_URL).mock(
+    route = respx.mock.post(TTS_URL).mock(
         return_value=httpx.Response(200, content=b"ID3mp3bytes")
     )
-    client = TTSClient(http, api_key="k", url=TTS_URL, voice="ko-female")
+    client = TTSClient(http, key="k", region="koreacentral", voice="ko-KR-SunHiNeural")
     assert await client.synthesize("안녕하세요") == b"ID3mp3bytes"
+    request = route.calls[0].request
+    assert request.headers["Ocp-Apim-Subscription-Key"] == "k"
+    body = request.content.decode("utf-8")
+    assert "ko-KR-SunHiNeural" in body and "안녕하세요" in body
+
+
+@respx.mock
+async def test_tts_escapes_ssml_markup(http):
+    route = respx.mock.post(TTS_URL).mock(
+        return_value=httpx.Response(200, content=b"ID3mp3bytes")
+    )
+    client = TTSClient(http, key="k", region="koreacentral", voice="ko-KR-SunHiNeural")
+    await client.synthesize("<속닥> & 조용히")
+    body = route.calls[0].request.content.decode("utf-8")
+    assert "&lt;속닥&gt; &amp; 조용히" in body
 
 
 @respx.mock
 async def test_tts_empty_audio_raises(http):
     respx.mock.post(TTS_URL).mock(return_value=httpx.Response(200, content=b""))
-    client = TTSClient(http, api_key="k", url=TTS_URL, voice="ko-female")
+    client = TTSClient(http, key="k", region="koreacentral", voice="ko-KR-SunHiNeural")
     with pytest.raises(AIServiceError):
         await client.synthesize("안녕하세요")
 

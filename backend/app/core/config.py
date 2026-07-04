@@ -30,17 +30,16 @@ class Settings(BaseSettings):
     supabase_service_role_key: str
     supabase_jwt_secret: str
 
-    # Azure Pronunciation Assessment
+    # Azure Speech: pronunciation assessment + neural TTS (same key/region)
     azure_speech_key: str = ""
     azure_speech_region: str = ""
+    azure_tts_voice: str = "ko-KR-SunHiNeural"
 
     # NVIDIA-hosted models (OpenAI-compatible endpoints unless noted)
     nvidia_api_key: str = ""
     nvidia_asr_url: str = "https://integrate.api.nvidia.com/v1/audio/transcriptions"
     nvidia_llm_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
     nvidia_llm_model: str = "meta/llama-3.1-70b-instruct"
-    nvidia_tts_url: str = "https://integrate.api.nvidia.com/v1/audio/speech"
-    nvidia_tts_voice: str = "magpie-multilingual-ko-female-1"
     nvidia_vision_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
     nvidia_vision_model: str = "nvidia/nemotron-nano-vl-8b-v1"
 

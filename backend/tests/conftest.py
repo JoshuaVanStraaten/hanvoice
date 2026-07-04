@@ -15,7 +15,6 @@ os.environ.setdefault("AZURE_SPEECH_REGION", "koreacentral")
 os.environ.setdefault("NVIDIA_API_KEY", "nvidia-test-key")
 os.environ.setdefault("NVIDIA_ASR_URL", "http://nvidia.test/asr")
 os.environ.setdefault("NVIDIA_LLM_URL", "http://nvidia.test/llm")
-os.environ.setdefault("NVIDIA_TTS_URL", "http://nvidia.test/tts")
 os.environ.setdefault("NVIDIA_VISION_URL", "http://nvidia.test/vision")
 
 import pytest

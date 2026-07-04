@@ -11,8 +11,8 @@
 └──────────────┘               ▼                     │ (PostgREST)
                        ┌──────────────┐──────────────┘
                        │  FastAPI     │
-                       │  backend     │──▶ Azure Speech (pronunciation)
-                       └──────────────┘──▶ NVIDIA: ASR · Llama · TTS · Nemotron-VL
+                       │  backend     │──▶ Azure Speech (pronunciation, TTS)
+                       └──────────────┘──▶ NVIDIA: ASR · Llama · Nemotron-VL
                                │
                                └─────────▶ Stripe (checkout + webhooks)
 ```

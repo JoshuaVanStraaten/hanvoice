@@ -15,7 +15,7 @@ from tests.factories import (
 )
 
 LLM_URL = "http://nvidia.test/llm"
-TTS_URL = "http://nvidia.test/tts"
+TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
 ASR_URL = "http://nvidia.test/asr"
 
 VALID_TURN = {

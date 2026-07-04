@@ -82,9 +82,9 @@ def get_conversation_service(request: Request) -> ConversationService:
         asr=NemotronASRClient(http, api_key=settings.nvidia_api_key, url=settings.nvidia_asr_url),
         tts=TTSClient(
             http,
-            api_key=settings.nvidia_api_key,
-            url=settings.nvidia_tts_url,
-            voice=settings.nvidia_tts_voice,
+            key=settings.azure_speech_key,
+            region=settings.azure_speech_region,
+            voice=settings.azure_tts_voice,
         ),
     )
 
