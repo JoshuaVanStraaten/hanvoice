@@ -21,7 +21,9 @@ function drawStrokes(canvas: HTMLCanvasElement, strokes: Stroke[]): void {
   if (!ctx) return;
   const scale = canvas.width / CANVAS_SIZE;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.lineWidth = 6 * scale;
+  // Thick strokes on purpose: the vision model downscales the image and
+  // stops perceiving thin lines — 12px reads like a marker, not a wisp.
+  ctx.lineWidth = 12 * scale;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.strokeStyle = "#23262c"; // ink
