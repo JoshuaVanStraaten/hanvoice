@@ -45,8 +45,9 @@ export interface LessonSummary {
   slug: string;
   title: string;
   description: string;
+  section: string;
   sort_order: number;
-  phrase_count: number;
+  block_count: number;
 }
 
 export interface LessonPhrase {
@@ -58,12 +59,69 @@ export interface LessonPhrase {
   sort_order: number;
 }
 
+/** Explain payloads are structured segments, not markdown — chars/example
+ * segments render as big-glyph cards and ko/roman/en rows. */
+export interface ExplainCharItem {
+  ko: string;
+  label?: string;
+  note?: string;
+}
+
+export interface ExplainExampleItem {
+  ko: string;
+  roman?: string;
+  en?: string;
+}
+
+export type ExplainSegment =
+  | { type: "text" | "tip"; body: string }
+  | { type: "chars"; items: ExplainCharItem[] }
+  | { type: "example"; items: ExplainExampleItem[] };
+
+export interface ExplainPayload {
+  segments: ExplainSegment[];
+}
+
+export interface WritePayload {
+  target: string;
+  hint?: string;
+}
+
+export interface QuizPayload {
+  question: string;
+  choices: string[];
+  answer: number;
+  explanation?: string;
+}
+
+interface LessonBlockBase {
+  id: number;
+  sort_order: number;
+  passed: boolean;
+  phrase: LessonPhrase | null;
+}
+
+export type LessonBlock =
+  | (LessonBlockBase & { kind: "explain"; payload: ExplainPayload })
+  | (LessonBlockBase & { kind: "speak"; payload: Record<string, never> })
+  | (LessonBlockBase & { kind: "write"; payload: WritePayload })
+  | (LessonBlockBase & { kind: "quiz"; payload: QuizPayload });
+
 export interface LessonDetail {
   id: number;
   slug: string;
   title: string;
   description: string;
-  phrases: LessonPhrase[];
+  section: string;
+  blocks: LessonBlock[];
+}
+
+export interface BlockCompleteResponse {
+  block_id: number;
+  passed: boolean;
+  blocks_completed: number;
+  block_count: number;
+  lesson_completed: boolean;
 }
 
 export interface ScenarioSummary {
@@ -149,8 +207,8 @@ export interface LessonProgressItem {
   lesson_slug: string;
   lesson_title: string;
   status: "in_progress" | "completed";
-  phrases_completed: number;
-  phrase_count: number;
+  blocks_completed: number;
+  block_count: number;
   best_pronunciation_score: number | null;
 }
 

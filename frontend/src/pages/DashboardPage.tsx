@@ -104,9 +104,9 @@ export function DashboardPage() {
             <p className="text-sm text-ink-soft">{continueTarget.lesson.description}</p>
             {continueTarget.started && (
               <MeterBar
-                label="Phrases passed"
-                used={continueTarget.started.phrases_completed}
-                limit={continueTarget.started.phrase_count}
+                label="Steps passed"
+                used={continueTarget.started.blocks_completed}
+                limit={continueTarget.started.block_count}
               />
             )}
             <Link to={`/lessons/${continueTarget.lesson.slug}`}>

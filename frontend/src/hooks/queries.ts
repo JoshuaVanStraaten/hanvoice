@@ -6,6 +6,7 @@ import { apiGet, apiPatch, apiPost } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import type {
   Plan,
+  BlockCompleteResponse,
   LessonDetail,
   LessonSummary,
   Me,
@@ -71,6 +72,19 @@ export function useScenarios() {
     queryKey: ["scenarios"],
     queryFn: () => apiGet<ScenarioSummary[]>("/scenarios"),
     staleTime: 5 * 60_000,
+  });
+}
+
+/** Marks a self-attested block (explain/quiz) as passed on the backend. */
+export function useCompleteBlock(slug: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (blockId: number) =>
+      apiPost<BlockCompleteResponse>(`/lessons/blocks/${blockId}/complete`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["lesson", slug] });
+      void queryClient.invalidateQueries({ queryKey: ["progress"] });
+    },
   });
 }
 

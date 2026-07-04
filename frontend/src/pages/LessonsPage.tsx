@@ -2,6 +2,22 @@ import { Link } from "react-router-dom";
 
 import { Card, ErrorNote, MeterBar, Spinner } from "../components/ui";
 import { useLessons, useProgress } from "../hooks/queries";
+import type { LessonSummary } from "../lib/types";
+
+/** Lessons arrive sorted; group consecutive runs by section label so the
+ * list reads as a course ("Read & write Hangul" → "Speak"). */
+function groupBySection(lessons: LessonSummary[]): Array<{ section: string; lessons: LessonSummary[] }> {
+  const groups: Array<{ section: string; lessons: LessonSummary[] }> = [];
+  for (const lesson of lessons) {
+    const last = groups[groups.length - 1];
+    if (last && last.section === lesson.section) {
+      last.lessons.push(lesson);
+    } else {
+      groups.push({ section: lesson.section, lessons: [lesson] });
+    }
+  }
+  return groups;
+}
 
 export function LessonsPage() {
   const lessons = useLessons();
@@ -15,7 +31,7 @@ export function LessonsPage() {
       <header>
         <h1 className="text-2xl font-bold">Lessons</h1>
         <p className="text-sm text-ink-soft">
-          Small phrase chunks — pass each one by saying it out loud.
+          Learn to read, write, and say Korean — from zero, one small step at a time.
         </p>
       </header>
 
@@ -24,35 +40,43 @@ export function LessonsPage() {
         <ErrorNote error={lessons.error} retry={() => void lessons.refetch()} />
       )}
 
-      {lessons.isSuccess && (
-        <ul className="space-y-3">
-          {lessons.data.map((lesson) => {
-            const state = progressBySlug.get(lesson.slug);
-            return (
-              <li key={lesson.id}>
-                <Link to={`/lessons/${lesson.slug}`} className="block">
-                  <Card className="space-y-2 transition-colors hover:border-taegeuk-blue">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-bold">{lesson.title}</h2>
-                      {state?.status === "completed" && (
-                        <span className="rounded-full bg-jade/10 px-2.5 py-0.5 text-[11px] font-semibold text-jade">
-                          Completed
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-ink-soft">{lesson.description}</p>
-                    <MeterBar
-                      label="Phrases passed"
-                      used={state?.phrases_completed ?? 0}
-                      limit={lesson.phrase_count}
-                    />
-                  </Card>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {lessons.isSuccess &&
+        groupBySection(lessons.data).map((group) => (
+          <section key={group.section || "lessons"} className="space-y-3">
+            {group.section && (
+              <h2 className="text-sm font-semibold tracking-wide text-ink-soft uppercase">
+                {group.section}
+              </h2>
+            )}
+            <ul className="space-y-3">
+              {group.lessons.map((lesson) => {
+                const state = progressBySlug.get(lesson.slug);
+                return (
+                  <li key={lesson.id}>
+                    <Link to={`/lessons/${lesson.slug}`} className="block">
+                      <Card className="space-y-2 transition-colors hover:border-taegeuk-blue">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold">{lesson.title}</h3>
+                          {state?.status === "completed" && (
+                            <span className="rounded-full bg-jade/10 px-2.5 py-0.5 text-[11px] font-semibold text-jade">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-ink-soft">{lesson.description}</p>
+                        <MeterBar
+                          label="Steps passed"
+                          used={state?.blocks_completed ?? 0}
+                          limit={lesson.block_count}
+                        />
+                      </Card>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
     </div>
   );
 }

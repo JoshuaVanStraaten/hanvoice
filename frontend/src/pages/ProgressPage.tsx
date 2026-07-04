@@ -51,9 +51,9 @@ export function ProgressPage() {
                   )}
                 </div>
                 <MeterBar
-                  label={lesson.status === "completed" ? "Completed" : "Phrases passed"}
-                  used={lesson.phrases_completed}
-                  limit={lesson.phrase_count}
+                  label={lesson.status === "completed" ? "Completed" : "Steps passed"}
+                  used={lesson.blocks_completed}
+                  limit={lesson.block_count}
                 />
               </Card>
             ))}

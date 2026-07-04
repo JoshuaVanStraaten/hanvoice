@@ -1,13 +1,13 @@
-/** Hangul handwriting practice. The canvas is transparent with a faint
- * tracing guide *behind* it — export composites strokes onto clean white so
- * the vision model never sees the guide. The curriculum builds up the way
- * Hangul does: basic vowels → basic consonants → the syllables of the
- * phrases the learner already says (안녕하세요, 감사합니다). */
+/** Hangul handwriting free practice. The drawing surface lives in
+ * HangulCanvas (shared with write lesson blocks); this page adds the target
+ * picker. The curriculum builds up the way Hangul does: basic vowels → basic
+ * consonants → the syllables of the phrases the learner already says. */
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { Button, Card, ErrorNote, ScoreRing, Spinner } from "../components/ui";
+import { HangulCanvas } from "../components/HangulCanvas";
 import { useActivityInvalidation } from "../hooks/queries";
 import { apiPost } from "../lib/api";
 import type { HandwritingAttempt } from "../lib/types";
@@ -37,51 +37,9 @@ const TARGET_GROUPS: TargetGroup[] = [
 ];
 
 const TARGETS = TARGET_GROUPS.flatMap((group) => group.targets);
-const CANVAS_SIZE = 320; // CSS px; internal resolution scales with DPR
-
-type Stroke = Array<{ x: number; y: number }>;
-
-function drawStrokes(canvas: HTMLCanvasElement, strokes: Stroke[]): void {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const scale = canvas.width / CANVAS_SIZE;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // Thick strokes on purpose: the vision model downscales the image and
-  // stops perceiving thin lines — 12px reads like a marker, not a wisp.
-  ctx.lineWidth = 12 * scale;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "#23262c"; // ink
-  for (const stroke of strokes) {
-    if (stroke.length < 2) continue;
-    ctx.beginPath();
-    const first = stroke[0];
-    if (!first) continue;
-    ctx.moveTo(first.x * scale, first.y * scale);
-    for (const point of stroke.slice(1)) ctx.lineTo(point.x * scale, point.y * scale);
-    ctx.stroke();
-  }
-}
-
-/** Strokes composited onto white, as base64 PNG without the data: prefix. */
-function exportPng(canvas: HTMLCanvasElement): string {
-  const offscreen = document.createElement("canvas");
-  offscreen.width = canvas.width;
-  offscreen.height = canvas.height;
-  const ctx = offscreen.getContext("2d");
-  if (!ctx) throw new Error("Canvas export failed");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, offscreen.width, offscreen.height);
-  ctx.drawImage(canvas, 0, 0);
-  return offscreen.toDataURL("image/png").split(",")[1] ?? "";
-}
 
 export function WritingPage() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const currentStroke = useRef<Stroke>([]);
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [targetIndex, setTargetIndex] = useState(0);
-  const [showGuide, setShowGuide] = useState(true);
   const invalidateActivity = useActivityInvalidation();
 
   const target = TARGETS[targetIndex] ?? TARGETS[0] ?? "안";
@@ -95,54 +53,10 @@ export function WritingPage() {
     onSuccess: () => invalidateActivity(),
   });
 
-  function localPoint(event: React.PointerEvent<HTMLCanvasElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    return {
-      x: ((event.clientX - rect.left) / rect.width) * CANVAS_SIZE,
-      y: ((event.clientY - rect.top) / rect.height) * CANVAS_SIZE,
-    };
-  }
-
-  function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    currentStroke.current = [localPoint(event)];
-  }
-
-  function handlePointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
-    if (currentStroke.current.length === 0) return;
-    currentStroke.current.push(localPoint(event));
-    const canvas = canvasRef.current;
-    if (canvas) drawStrokes(canvas, [...strokes, currentStroke.current]);
-  }
-
-  function handlePointerUp() {
-    // Capture before clearing the ref: the state updater runs *after* this
-    // handler returns, and must not read the already-emptied ref.
-    const stroke = currentStroke.current;
-    if (stroke.length === 0) return;
-    currentStroke.current = [];
-    setStrokes((existing) => [...existing, stroke]);
-  }
-
-  function updateStrokes(next: Stroke[]) {
-    setStrokes(next);
-    const canvas = canvasRef.current;
-    if (canvas) drawStrokes(canvas, next);
-  }
-
   function selectTarget(index: number) {
     setTargetIndex(index);
-    updateStrokes([]);
     submit.reset();
   }
-
-  function handleSubmit() {
-    const canvas = canvasRef.current;
-    if (!canvas || strokes.length === 0) return;
-    submit.mutate(exportPng(canvas));
-  }
-
-  const dpr = typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, 2);
 
   return (
     <div className="space-y-4">
@@ -196,66 +110,13 @@ export function WritingPage() {
         })}
       </div>
 
-      <Card className="space-y-3">
-        <div className="relative mx-auto" style={{ width: CANVAS_SIZE, height: CANVAS_SIZE }}>
-          {/* Tracing guide sits behind the transparent canvas — never exported. */}
-          <div
-            aria-hidden
-            className="absolute inset-0 flex items-center justify-center rounded-lg border border-line bg-white"
-          >
-            {showGuide && (
-              <span
-                lang="ko"
-                className="hangul-display select-none text-ink/10"
-                style={{ fontSize: CANVAS_SIZE * 0.72, lineHeight: 1 }}
-              >
-                {target}
-              </span>
-            )}
-          </div>
-          <canvas
-            ref={canvasRef}
-            width={CANVAS_SIZE * dpr}
-            height={CANVAS_SIZE * dpr}
-            className="absolute inset-0 h-full w-full rounded-lg"
-            style={{ touchAction: "none" }}
-            aria-label={`Drawing canvas — write ${target}`}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button
-            variant="quiet"
-            onClick={() => updateStrokes(strokes.slice(0, -1))}
-            disabled={strokes.length === 0 || submit.isPending}
-          >
-            Undo
-          </Button>
-          <Button
-            variant="quiet"
-            onClick={() => updateStrokes([])}
-            disabled={strokes.length === 0 || submit.isPending}
-          >
-            Clear
-          </Button>
-          <Button
-            variant="quiet"
-            onClick={() => setShowGuide((value) => !value)}
-            aria-pressed={showGuide}
-          >
-            {showGuide ? "Hide guide" : "Show guide"}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={strokes.length === 0 || submit.isPending}
-          >
-            {submit.isPending ? "Checking…" : "Check my writing"}
-          </Button>
-        </div>
+      <Card>
+        <HangulCanvas
+          key={target}
+          target={target}
+          submitting={submit.isPending}
+          onSubmit={(imageBase64) => submit.mutate(imageBase64)}
+        />
       </Card>
 
       {submit.isPending && <Spinner label="Scoring your writing" />}
