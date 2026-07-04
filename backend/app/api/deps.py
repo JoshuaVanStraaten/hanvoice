@@ -8,6 +8,7 @@ process); the user is decoded from the bearer token per request.
 from typing import Annotated
 
 import httpx
+import jwt
 from fastapi import Depends, Request
 
 from app.core.config import Settings
@@ -46,7 +47,8 @@ def get_current_user(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise UnauthorizedError("Missing bearer token.")
-    return decode_access_token(token.strip(), settings.supabase_jwt_secret)
+    jwks: jwt.PyJWKClient = request.state.jwks
+    return decode_access_token(token.strip(), settings.supabase_jwt_secret, jwks_client=jwks)
 
 
 def get_azure_client(request: Request) -> AzurePronunciationClient:

@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from typing import TypedDict
 
 import httpx
+import jwt
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,18 +27,22 @@ class AppState(TypedDict):
     http: httpx.AsyncClient
     db: Database
     settings: Settings
+    jwks: jwt.PyJWKClient
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[AppState]:
     settings = get_settings()
+    # Verifies asymmetrically-signed Supabase tokens (ES256). Keys are fetched
+    # lazily on first use and cached for an hour — no startup network call.
+    jwks = jwt.PyJWKClient(settings.supabase_jwks_url, cache_jwk_set=True, lifespan=3600)
     async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as http:
         db = Database(
             http=http,
             base_url=settings.supabase_url,
             service_role_key=settings.supabase_service_role_key,
         )
-        yield {"http": http, "db": db, "settings": settings}
+        yield {"http": http, "db": db, "settings": settings, "jwks": jwks}
 
 
 def create_app() -> FastAPI:
