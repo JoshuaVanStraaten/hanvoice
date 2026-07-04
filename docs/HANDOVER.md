@@ -1,23 +1,35 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-04 · **Branch:** `main` · **Status: feature-complete and running live locally, all five AI paths verified end-to-end.**
+**Updated:** 2026-07-04 (evening) · **Branch:** `main` · **Status: curriculum shipped — the app now teaches Korean from zero; verified live end-to-end.**
 
 ## What exists
 
 The full application (M1–M10 of `docs/superpowers/plans/2026-07-03-hanvoice-full-app.md`)
-is implemented, tested, and merged: FastAPI backend (89 tests; ruff + strict mypy
-clean), React PWA frontend (15 tests; eslint + tsc clean), Docker images
-smoke-tested, CI workflow written. See `README.md`, `docs/architecture.md`,
-`docs/api.md`, `docs/deployment.md`, `docs/schema.md`.
+plus the **real curriculum** (`docs/superpowers/plans/2026-07-04-lesson-blocks-curriculum.md`,
+design in `docs/superpowers/specs/2026-07-04-lesson-blocks-curriculum-design.md`):
+FastAPI backend (97 tests; ruff + strict mypy clean), React PWA frontend
+(17 tests; eslint + tsc clean), Docker images smoke-tested, CI workflow written.
+See `README.md`, `docs/architecture.md`, `docs/api.md`, `docs/deployment.md`, `docs/schema.md`.
+
+**Curriculum architecture (new):** lessons are ordered `lesson_blocks`
+(`explain | speak | write | quiz`, JSONB payload; speak blocks FK to
+`lesson_phrases` so the whole pronunciation stack is reused). Per-block pass
+state in `lesson_block_progress` (backend-written; speak/write pass only via
+scored attempts ≥ 60, explain/quiz via `POST /lessons/blocks/{id}/complete`).
+`lesson_progress.phrases_completed` → `blocks_completed`. The lesson page is a
+stepper player that resumes at the first unpassed block; the standalone Write
+tab still works (canvas extracted to `HangulCanvas`).
 
 ## Live environment
 
 - **Supabase project `hanvoice`** (`mxibibkcaarltsbkomvm`, eu-west-1, free tier) —
   migrated + seeded. `frontend/.env` and `backend/.env` are wired (gitignored).
-- **Content:** 5 lessons × 5 phrases (café, first meetings, restaurant, getting
-  around, money), 1 conversation scenario (iced americano), barista prompt v1.
-  Content is data — new lessons are an INSERT, no deploy. `supabase/seed.sql`
-  mirrors the live content.
+- **Content:** 13 lessons in two sections — **"Read & write Hangul"** (8 lessons,
+  62 blocks: what-is-hangul → vowels → consonants → building syllables → more
+  letters → batchim → sound changes → reading + 해요체) and **"Speak"** (the 5
+  phrase lessons as speak-block units) — plus 1 conversation scenario (iced
+  americano), barista prompt v1. Content is data — new lessons are an INSERT,
+  no deploy. `supabase/seed.sql` mirrors the live content.
 - **Azure Speech** (northeurope, F0): pronunciation scoring, STT for conversation
   turns, Korean neural TTS (SunHi). **NVIDIA**: Llama barista chat + Nemotron-VL
   handwriting vision. All verified live, in-browser and via API.
@@ -29,41 +41,26 @@ smoke-tested, CI workflow written. See `README.md`, `docs/architecture.md`,
 
 ## What's left (in rough priority order)
 
-1. **Real curriculum (NEXT — before the GitHub push).** Founder decision
-   2026-07-04: lessons must actually *teach*, not just drill phrases —
-   scenarios/conversations are a practice **feature**, the curriculum is the
-   product spine. Direction:
-   - **Curriculum arc:** how Hangul works (blocks, jamo) → vowels → consonants
-     → syllable building → batchim (final consonants) → beginner sound-change
-     rules (linking, nasalization — lite) → reading practice → politeness
-     (해요체) intro → then the existing phrase lessons slot in as speaking units.
-   - **Architectural implication:** the current `lessons → lesson_phrases`
-     model only supports phrase drills. Lessons need ordered *content blocks*
-     of mixed types — explanation (rich text), speak (existing pronunciation
-     loop), write (existing canvas, given jamo/syllable targets), and a light
-     read/quiz type. Likely a new migration (e.g. `lesson_blocks` with a
-     `kind` + JSONB payload, RLS read-only like other content) + a
-     LessonDetail renderer that walks blocks. Keep content as data (authoring
-     = INSERTs, no deploys); keep the pass/progress semantics per block type.
-   - **Non-goals for this pass:** no CMS/admin UI, no spaced repetition —
-     curriculum structure + the Hangul course content itself.
-   - Brainstorm → plan → execute per the superpowers workflow; the schema
-     change is approved-in-principle but the design deserves a plan doc.
-2. **Push to GitHub** — repo has no remote; CI has never actually run.
-3. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
+1. **Push to GitHub (NEXT)** — repo has no remote; CI has never actually run.
+2. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
    frontend static host (Vercel/Netlify), env vars at build time for `VITE_*`.
-4. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
+3. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
    set the four STRIPE_* env vars, point the webhook at
    `/api/billing/webhook`. Until then billing routes 503 (by design).
-5. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
+4. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
    configure custom SMTP before real signups.
-6. **Content depth** — more scenarios (only the café exists; the Talk tab is the
+5. **Content depth** — more scenarios (only the café exists; the Talk tab is the
    marquee feature), audio for lesson phrases is generated on demand (could
-   pre-generate + cache in Storage), more lessons.
-7. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
-   one config line to swap), phoneme-level pronunciation coaching (needs Azure
-   streaming SDK instead of REST), streaks/gamification, romanization toggle as
-   a profile setting, raw-audio persistence for progress review (consent + storage).
+   pre-generate + cache in Storage), double vowels (ㅐㅔㅘ…) and tense/aspirated
+   consonants as Hangul course lessons 9-10, intro explain blocks for the five
+   Speak lessons.
+6. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
+   scores synthetic/mouse drawings near zero — one config line to swap; matters
+   more now that write blocks gate lesson progress), phoneme-level pronunciation
+   coaching (needs Azure streaming SDK instead of REST), streaks/gamification,
+   romanization toggle as a profile setting, raw-audio persistence for progress
+   review (consent + storage), `/api/progress` + `/api/lessons` do N+1 block
+   queries per lesson (fine at 13 lessons; batch when content grows).
 
 ## Gotchas (hard-won, don't relearn)
 
@@ -85,3 +82,11 @@ smoke-tested, CI workflow written. See `README.md`, `docs/architecture.md`,
 - Windows/OneDrive checkout: LF/CRLF git warnings are harmless. Backend venv:
   `backend/.venv/Scripts/python -m pytest|ruff|mypy`. Route order everywhere:
   rate limit → resolve plan → quota → AI call → persist → meter.
+- **Run the backend with `PYTHONUTF8=1` on Windows.** structlog prints to the
+  console; a log line containing Hangul (e.g. the vision-retry warning quoting
+  the target char) crashes the *request* with UnicodeEncodeError on a cp1252
+  console. Production containers (UTF-8) are unaffected. Also: port 8000 tends
+  to hold a stale uvicorn from an earlier session — probe a new route (404 =
+  stale) and kill it before testing new backend code.
+- Local dev drive recipe (servers, test login, deterministic speak-block pass
+  via Azure TTS WAV): `.claude/skills/verify/SKILL.md`.

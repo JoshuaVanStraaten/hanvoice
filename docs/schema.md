@@ -1,6 +1,6 @@
 # HanVoice Database Schema
 
-PostgreSQL schema for Supabase. Source of truth: [`supabase/migrations/20260703090000_initial_schema.sql`](../supabase/migrations/20260703090000_initial_schema.sql). Sample content: [`supabase/seed.sql`](../supabase/seed.sql).
+PostgreSQL schema for Supabase. Source of truth: [`supabase/migrations/20260703090000_initial_schema.sql`](../supabase/migrations/20260703090000_initial_schema.sql) plus [`supabase/migrations/20260704110000_lesson_blocks.sql`](../supabase/migrations/20260704110000_lesson_blocks.sql). Sample content: [`supabase/seed.sql`](../supabase/seed.sql).
 
 ## Security model (read this first)
 
@@ -46,10 +46,18 @@ Primary keys: `profiles` uses the `auth.users` uuid; all other tables use `bigin
 ### Learning content (ours, read-only to users)
 
 #### `lessons`
-**Why it exists:** The curriculum container — a themed pack like "Café essentials". In the database rather than code so new content ships instantly and `is_published` lets us stage drafts. Users see published lessons only.
+**Why it exists:** The curriculum container — "What is Hangul?", "Café essentials". In the database rather than code so new content ships instantly and `is_published` lets us stage drafts. Users see published lessons only. `section` is a display group label ("Read & write Hangul" / "Speak") that makes the lessons list read as a course.
+
+#### `lesson_blocks`
+**Why it exists:** A lesson that *teaches* is an ordered sequence of mixed steps, not a flat phrase list. One row per step: `kind` ∈ `explain | speak | write | quiz` with a JSONB `payload` for the kind-specific content (explain segments, write target + hint, quiz question/choices/answer). Speak blocks carry a **required `phrase_id` FK** instead of a payload — that is what lets them reuse the whole existing pronunciation stack (TTS locked to phrase ids, attempt analytics, best-score rollups) unchanged. Read-only to users via the parent lesson's `is_published`, like `lesson_phrases`.
+
+Payload shapes (documented, not constrained — content is trusted, authored by us):
+- `explain`: `{"segments": [{"type": "text|tip", "body"}, {"type": "chars", "items": [{ko, label?, note?}]}, {"type": "example", "items": [{ko, roman?, en?}]}]}`
+- `write`: `{"target": "ㅏ", "hint": "..."}`
+- `quiz`: `{"question", "choices": [...], "answer": <index>, "explanation"}`
 
 #### `lesson_phrases`
-**Why it exists:** The product's core teaching unit is the tiny conversational chunk ("물 주세요"), so it gets its own table: hangul, romanization, English, reference-audio URL, ordered within a lesson. Pronunciation attempts point back at the phrase they practiced, which is what makes "your 아 improved this week" analytics possible.
+**Why it exists:** The speakable chunk ("물 주세요", or a single syllable like "가" in the Hangul course), so it gets its own table: hangul, romanization, English, reference-audio URL, ordered within a lesson. Pronunciation attempts point back at the phrase they practiced, which is what makes "your 아 improved this week" analytics possible. Every phrase is referenced by at least one speak block.
 
 #### `scenarios`
 **Why it exists:** Client-facing metadata for immersive conversations ("Order an iced Americano in a Seoul café"): title, description, difficulty, and `completion_goals` (a JSON list like `["greeted", "ordered_drink", "paid"]`) that the backend checks off during the conversation to decide when the scenario is passed.
@@ -73,8 +81,11 @@ Primary keys: `profiles` uses the `auth.users` uuid; all other tables use `bigin
 
 ### Progress
 
+#### `lesson_block_progress`
+**Why it exists:** Blocks are the unit of pass/fail, so pass state lives per `(user, block)`: `passed`, `best_score`, `passed_at`. Written only by the backend — explain/quiz complete via `POST /lessons/blocks/{id}/complete` (self-attested by design; reading can't be verified), while speak/write are marked only when a backend-scored attempt clears the 60 threshold, so a user still cannot forge a score. Never downgrades: a failed retry after a pass keeps the pass and the best score.
+
 #### `lesson_progress`
-**Why it exists:** The home screen needs "3 of 5 phrases done, best score 82" for every lesson at render time. Computing that by aggregating `pronunciation_attempts` on every load gets slower forever; this per-`(user, lesson)` rollup, updated by the backend after each attempt, keeps it one indexed read.
+**Why it exists:** The home screen needs "3 of 9 steps done, best score 82" for every lesson at render time. Computing that by aggregating block progress on every load gets slower forever; this per-`(user, lesson)` rollup (`blocks_completed`, renamed from `phrases_completed` in the lesson_blocks migration), updated by the backend after each block outcome, keeps it one indexed read. `best_pronunciation_score` still derives from phrase attempts only.
 
 #### `scenario_progress`
 **Why it exists:** Same rollup for scenarios — status, `times_completed`, link to the most recent session — driving the scenario map UI and the key activation metric: *did this user complete a conversation in week one?*
