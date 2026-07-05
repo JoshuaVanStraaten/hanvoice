@@ -65,12 +65,16 @@ export interface ExplainCharItem {
   ko: string;
   label?: string;
   note?: string;
+  /** Overrides the carrier map for what TTS speaks (rarely needed). */
+  audio?: string;
 }
 
 export interface ExplainExampleItem {
   ko: string;
   roman?: string;
   en?: string;
+  /** Overrides the carrier map for what TTS speaks (rarely needed). */
+  audio?: string;
 }
 
 export type ExplainSegment =
@@ -85,6 +89,8 @@ export interface ExplainPayload {
 export interface WritePayload {
   target: string;
   hint?: string;
+  /** Overrides the carrier map for what TTS speaks (rarely needed). */
+  audio?: string;
 }
 
 export interface QuizPayload {

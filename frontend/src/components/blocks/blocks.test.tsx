@@ -1,9 +1,36 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ExplainBlock } from "./ExplainBlock";
 import { QuizBlock } from "./QuizBlock";
+import { WriteBlock } from "./WriteBlock";
+import { apiGet } from "../../lib/api";
 import type { ExplainPayload, QuizPayload } from "../../lib/types";
+
+vi.mock("../../lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../lib/api")>()),
+  apiGet: vi.fn(),
+}));
+
+const playSpy = vi.fn(() => Promise.resolve());
+vi.stubGlobal(
+  "Audio",
+  class {
+    constructor(public src: string) {}
+    play = playSpy;
+  },
+);
+
+beforeEach(() => {
+  vi.mocked(apiGet).mockReset();
+  playSpy.mockClear();
+});
+
+function withQueryClient(ui: React.ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={client}>{ui}</QueryClientProvider>;
+}
 
 const explainPayload: ExplainPayload = {
   segments: [
@@ -18,7 +45,12 @@ describe("ExplainBlock", () => {
   it("renders every segment kind and continues", () => {
     const onContinue = vi.fn();
     render(
-      <ExplainBlock payload={explainPayload} completing={false} onContinue={onContinue} />,
+      <ExplainBlock
+        blockId={7}
+        payload={explainPayload}
+        completing={false}
+        onContinue={onContinue}
+      />,
     );
 
     expect(screen.getByText("alphabet")).toBeInTheDocument(); // **bold** parsed
@@ -29,6 +61,63 @@ describe("ExplainBlock", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     expect(onContinue).toHaveBeenCalledTimes(1);
+  });
+
+  it("plays carrier audio for a char card, fetching once", async () => {
+    vi.mocked(apiGet).mockResolvedValue({ audio_base64: "bXAz" });
+    render(
+      <ExplainBlock
+        blockId={7}
+        payload={explainPayload}
+        completing={false}
+        onContinue={vi.fn()}
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: "Hear ㅏ (sounds like 아)" });
+    fireEvent.click(button);
+    await waitFor(() => expect(playSpy).toHaveBeenCalledTimes(1));
+    expect(apiGet).toHaveBeenCalledWith(
+      `/lessons/blocks/7/audio?text=${encodeURIComponent("아")}`,
+    );
+
+    fireEvent.click(button);
+    await waitFor(() => expect(playSpy).toHaveBeenCalledTimes(2));
+    expect(apiGet).toHaveBeenCalledTimes(1); // cached after first fetch
+  });
+
+  it("offers audio on example rows", () => {
+    render(
+      <ExplainBlock
+        blockId={7}
+        payload={explainPayload}
+        completing={false}
+        onContinue={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Hear 가요" })).toBeInTheDocument();
+  });
+});
+
+describe("WriteBlock audio", () => {
+  it("lets the learner hear the target before writing it", async () => {
+    vi.mocked(apiGet).mockResolvedValue({ audio_base64: "bXAz" });
+    render(
+      withQueryClient(
+        <WriteBlock
+          blockId={9}
+          payload={{ target: "ㄱ", hint: "One stroke." }}
+          onPassed={vi.fn()}
+          onContinue={vi.fn()}
+        />,
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Hear ㄱ (sounds like 가)" }));
+    await waitFor(() => expect(playSpy).toHaveBeenCalledTimes(1));
+    expect(apiGet).toHaveBeenCalledWith(
+      `/lessons/blocks/9/audio?text=${encodeURIComponent("가")}`,
+    );
   });
 });
 

@@ -5,10 +5,12 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+import { AudioButton, blockAudioProps } from "../AudioButton";
 import { HangulCanvas } from "../HangulCanvas";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
 import { apiPost } from "../../lib/api";
+import { audioTextFor } from "../../lib/hangulAudio";
 import type { HandwritingAttempt, WritePayload } from "../../lib/types";
 
 const PASS_THRESHOLD = 60;
@@ -46,9 +48,22 @@ export function WriteBlock({
   return (
     <div className="space-y-3">
       <div className="text-center">
-        <p className="text-sm text-ink-soft">
-          Write <span lang="ko" className="hangul-display text-lg text-ink">{payload.target}</span>
-          {payload.hint ? ` — ${payload.hint}` : ""}
+        <p className="flex items-center justify-center gap-2 text-sm text-ink-soft">
+          <span>
+            Write{" "}
+            <span lang="ko" className="hangul-display text-lg text-ink">
+              {payload.target}
+            </span>
+            {payload.hint ? ` — ${payload.hint}` : ""}
+          </span>
+          <AudioButton
+            size="sm"
+            {...blockAudioProps(
+              blockId,
+              payload.target,
+              audioTextFor(payload.target, payload.audio),
+            )}
+          />
         </p>
       </div>
 

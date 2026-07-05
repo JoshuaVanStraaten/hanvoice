@@ -1,9 +1,13 @@
 /** Explanation step: structured segments (text / chars / example / tip).
- * Reading is self-attested — Continue marks the block passed. */
+ * Every taught glyph is audible — bare jamo play their carrier syllable
+ * (ㄱ → 가), shown as "in 가" under the card. Reading is self-attested —
+ * Continue marks the block passed. */
 
 import type { ReactNode } from "react";
 
+import { AudioButton, blockAudioProps } from "../AudioButton";
 import { Button } from "../ui";
+import { audioTextFor, isCarrier } from "../../lib/hangulAudio";
 import type { ExplainPayload, ExplainSegment } from "../../lib/types";
 
 /** The only inline formatting explain text supports: **bold**. */
@@ -15,7 +19,7 @@ export function renderBold(body: string): ReactNode[] {
     );
 }
 
-function Segment({ segment }: { segment: ExplainSegment }) {
+function Segment({ blockId, segment }: { blockId: number; segment: ExplainSegment }) {
   switch (segment.type) {
     case "text":
       return <p className="text-sm leading-relaxed text-ink">{renderBold(segment.body)}</p>;
@@ -29,20 +33,31 @@ function Segment({ segment }: { segment: ExplainSegment }) {
     case "chars":
       return (
         <ul className="flex flex-wrap justify-center gap-2">
-          {segment.items.map((item) => (
-            <li
-              key={item.ko}
-              className="flex w-24 flex-col items-center gap-1 rounded-lg border border-line bg-paper-raised p-3 text-center"
-            >
-              <span lang="ko" className="hangul-display text-4xl text-ink">
-                {item.ko}
-              </span>
-              {item.label && (
-                <span className="text-sm font-semibold text-taegeuk-blue">{item.label}</span>
-              )}
-              {item.note && <span className="text-xs text-ink-soft">{item.note}</span>}
-            </li>
-          ))}
+          {segment.items.map((item) => {
+            const played = audioTextFor(item.ko, item.audio);
+            return (
+              <li
+                key={item.ko}
+                className="flex w-24 flex-col items-center gap-1 rounded-lg border border-line bg-paper-raised p-3 text-center"
+              >
+                <span lang="ko" className="hangul-display text-4xl text-ink">
+                  {item.ko}
+                </span>
+                {item.label && (
+                  <span className="text-sm font-semibold text-taegeuk-blue">{item.label}</span>
+                )}
+                {item.note && <span className="text-xs text-ink-soft">{item.note}</span>}
+                <span className="mt-1 flex items-center gap-1.5">
+                  <AudioButton size="sm" {...blockAudioProps(blockId, item.ko, played)} />
+                  {isCarrier(item.ko, item.audio) && (
+                    <span lang="ko" className="text-xs text-ink-soft">
+                      in {played}
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       );
     case "example":
@@ -51,8 +66,12 @@ function Segment({ segment }: { segment: ExplainSegment }) {
           {segment.items.map((item) => (
             <li
               key={item.ko}
-              className="flex items-baseline gap-3 rounded-lg border border-line bg-paper-raised px-3 py-2"
+              className="flex items-center gap-3 rounded-lg border border-line bg-paper-raised px-3 py-2"
             >
+              <AudioButton
+                size="sm"
+                {...blockAudioProps(blockId, item.ko, audioTextFor(item.ko, item.audio))}
+              />
               <span lang="ko" className="hangul-display text-xl text-ink">
                 {item.ko}
               </span>
@@ -67,10 +86,12 @@ function Segment({ segment }: { segment: ExplainSegment }) {
 }
 
 export function ExplainBlock({
+  blockId,
   payload,
   completing,
   onContinue,
 }: {
+  blockId: number;
   payload: ExplainPayload;
   completing: boolean;
   onContinue: () => void;
@@ -78,7 +99,7 @@ export function ExplainBlock({
   return (
     <div className="space-y-4">
       {(payload.segments ?? []).map((segment, index) => (
-        <Segment key={index} segment={segment} />
+        <Segment key={index} blockId={blockId} segment={segment} />
       ))}
       <div className="text-center">
         <Button onClick={onContinue} disabled={completing}>

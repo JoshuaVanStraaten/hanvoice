@@ -32,6 +32,7 @@ function BlockBody({
     case "explain":
       return (
         <ExplainBlock
+          blockId={block.id}
           payload={block.payload}
           completing={completing}
           onContinue={onSelfComplete}

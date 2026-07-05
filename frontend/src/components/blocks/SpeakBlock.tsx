@@ -5,11 +5,12 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+import { AudioButton } from "../AudioButton";
 import { RecordButton } from "../RecordButton";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
 import { useRecorder } from "../../hooks/useRecorder";
-import { apiGet, apiPostForm } from "../../lib/api";
+import { apiPostForm } from "../../lib/api";
 import { extensionFor } from "../../lib/audio";
 import type { LessonPhrase, PronunciationAttempt } from "../../lib/types";
 
@@ -109,50 +110,6 @@ function AttemptResult({ attempt }: { attempt: PronunciationAttempt }) {
   );
 }
 
-/** Plays the reference pronunciation (Azure TTS), fetched once then cached. */
-export function ListenButton({ phraseId, hangul }: { phraseId: number; hangul: string }) {
-  const [audio, setAudio] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
-  async function play() {
-    if (pending) return;
-    let base64 = audio;
-    if (!base64) {
-      setPending(true);
-      try {
-        const response = await apiGet<{ audio_base64: string }>(
-          `/pronunciation/phrases/${phraseId}/audio`,
-        );
-        base64 = response.audio_base64;
-        setAudio(base64);
-      } catch {
-        return; // listening is optional — fail quietly, the phrase text remains
-      } finally {
-        setPending(false);
-      }
-    }
-    void new Audio(`data:audio/mpeg;base64,${base64}`).play().catch(() => undefined);
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => void play()}
-      disabled={pending}
-      aria-label={`Hear ${hangul} pronounced`}
-      className="flex size-9 items-center justify-center rounded-full bg-taegeuk-blue/10 text-taegeuk-blue transition-colors hover:bg-taegeuk-blue/20 disabled:opacity-50"
-    >
-      {pending ? (
-        <span className="size-2 animate-pulse rounded-full bg-taegeuk-blue" aria-hidden />
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M8 5.5v13l11-6.5z" />
-        </svg>
-      )}
-    </button>
-  );
-}
-
 export function SpeakBlock({
   phrase,
   onPassed,
@@ -204,7 +161,10 @@ export function SpeakBlock({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <ListenButton phraseId={phrase.id} hangul={phrase.hangul} />
+          <AudioButton
+            path={`/pronunciation/phrases/${phrase.id}/audio`}
+            label={`Hear ${phrase.hangul} pronounced`}
+          />
           <RecordButton
             isRecording={recorder.isRecording}
             onPress={() => void handlePress()}
