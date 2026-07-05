@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { Dojang } from "../components/Dojang";
 import { ExplainBlock } from "../components/blocks/ExplainBlock";
 import { QuizBlock } from "../components/blocks/QuizBlock";
 import { SpeakBlock } from "../components/blocks/SpeakBlock";
@@ -111,6 +112,7 @@ function LessonPlayer({ lesson }: { lesson: LessonDetail }) {
       <Card className="space-y-3 text-center">
         {passedCount === blocks.length ? (
           <>
+            <Dojang label="Lesson complete" />
             <p className="text-lg font-bold text-jade">수고했어요! Lesson complete.</p>
             <p className="text-sm text-ink-soft">All {blocks.length} steps passed.</p>
           </>

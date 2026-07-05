@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { AudioButton, blockAudioProps } from "../AudioButton";
+import { Dojang } from "../Dojang";
 import { HangulCanvas } from "../HangulCanvas";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
@@ -87,7 +88,8 @@ export function WriteBlock({
           <p className="text-center text-sm text-ink-soft">{attempt.scores.feedback}</p>
           {passed ? (
             <div className="space-y-2 text-center">
-              <p className="text-sm font-semibold text-jade">통과! That one counts as passed.</p>
+              <Dojang />
+              <p className="text-sm font-semibold text-jade">That one counts as passed.</p>
               <Button onClick={onContinue}>Continue</Button>
             </div>
           ) : (

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { AudioButton } from "../AudioButton";
+import { Dojang } from "../Dojang";
 import { RecordButton } from "../RecordButton";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
@@ -220,7 +221,8 @@ export function SpeakBlock({
       )}
       {passed && (
         <div className="space-y-2 text-center">
-          <p className="text-sm font-semibold text-jade">통과! That one counts as passed.</p>
+          <Dojang />
+          <p className="text-sm font-semibold text-jade">That one counts as passed.</p>
           <Button onClick={onContinue}>Continue</Button>
         </div>
       )}
