@@ -52,9 +52,16 @@ Primary keys: `profiles` uses the `auth.users` uuid; all other tables use `bigin
 **Why it exists:** A lesson that *teaches* is an ordered sequence of mixed steps, not a flat phrase list. One row per step: `kind` ∈ `explain | speak | write | quiz` with a JSONB `payload` for the kind-specific content (explain segments, write target + hint, quiz question/choices/answer). Speak blocks carry a **required `phrase_id` FK** instead of a payload — that is what lets them reuse the whole existing pronunciation stack (TTS locked to phrase ids, attempt analytics, best-score rollups) unchanged. Read-only to users via the parent lesson's `is_published`, like `lesson_phrases`.
 
 Payload shapes (documented, not constrained — content is trusted, authored by us):
-- `explain`: `{"segments": [{"type": "text|tip", "body"}, {"type": "chars", "items": [{ko, label?, note?}]}, {"type": "example", "items": [{ko, roman?, en?}]}]}`
-- `write`: `{"target": "ㅏ", "hint": "..."}`
+- `explain`: `{"segments": [{"type": "text|tip", "body"}, {"type": "chars", "items": [{ko, label?, note?, audio?}]}, {"type": "example", "items": [{ko, roman?, en?, audio?}]}]}`
+- `write`: `{"target": "ㅏ", "hint": "...", "audio"?: "..."}`
 - `quiz`: `{"question", "choices": [...], "answer": <index>, "explanation"}`
+
+Every taught glyph is audible via `GET /lessons/blocks/{id}/audio?text=…`. The
+optional `audio` field overrides what TTS speaks for an item; without it, bare
+jamo fall back to a fixed carrier-syllable map in code (consonants ride ㅏ:
+ㄱ → 가; vowels ride silent ㅇ: ㅏ → 아) and anything else is spoken as-is. The
+endpoint only accepts texts derivable from the block's own payload by that
+rule, so TTS spend stays bounded by authored content.
 
 #### `lesson_phrases`
 **Why it exists:** The speakable chunk ("물 주세요", or a single syllable like "가" in the Hangul course), so it gets its own table: hangul, romanization, English, reference-audio URL, ordered within a lesson. Pronunciation attempts point back at the phrase they practiced, which is what makes "your 아 improved this week" analytics possible. Every phrase is referenced by at least one speak block.

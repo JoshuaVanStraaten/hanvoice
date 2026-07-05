@@ -18,15 +18,18 @@ codes: `quota_exceeded` (429 — daily limit hit, no AI spend occurred),
 | GET | `/me` | Profile + resolved plan + founder flag |
 | PATCH | `/me` | Update `display_name` / `native_language` |
 | GET | `/usage/today` | Today's counters + plan limits |
-| GET | `/lessons` | Lesson summaries (with phrase counts) |
-| GET | `/lessons/{slug}` | Lesson with ordered phrases |
+| GET | `/lessons` | Lesson summaries (with block counts) |
+| GET | `/lessons/{slug}` | Lesson with ordered blocks + per-block pass state |
+| POST | `/lessons/blocks/{id}/complete` | Mark an explain/quiz block passed (speak/write pass only via scored attempts) |
+| GET | `/lessons/blocks/{id}/audio` | Teaching audio for a glyph on this block (`?text=` must be one of the block's authored sounds; bare jamo speak their carrier syllable, e.g. ㄱ → 가). Cached, rate-limited, unmetered |
+| GET | `/pronunciation/phrases/{id}/audio` | Reference TTS for a phrase (base64 mp3). Cached, rate-limited, unmetered |
 | GET | `/scenarios` | Conversation scenarios + completion goals |
 | POST | `/pronunciation/attempts` | Multipart `audio` + `phrase_id` (or `target_text`) → Azure scores + per-word detail |
 | POST | `/conversations` | JSON `{scenario_slug}` → session + Minji's opener + TTS audio (base64) |
 | POST | `/conversations/{id}/turns` | Multipart `audio` *or* `text` → user + assistant messages, goals, TTS |
 | POST | `/conversations/{id}/complete` | Mark the session completed |
 | GET | `/conversations/{id}` | Session + full message history |
-| POST | `/handwriting/attempts` | JSON `{target_text, image_base64}` (PNG ≤ 2 MB) → vision scores + feedback |
+| POST | `/handwriting/attempts` | JSON `{target_text, image_base64, block_id?}` (PNG ≤ 2 MB) → vision scores + feedback; with `block_id`, a pass (≥ 60) marks the block |
 | GET | `/progress` | Lesson + scenario rollups |
 | POST | `/waitlist` | Anonymous `{email, source?}` → 201 (duplicate-safe) |
 | POST | `/billing/checkout` | `{plan: "premium"|"founder"}` → Stripe checkout URL (503 if Stripe unconfigured) |
