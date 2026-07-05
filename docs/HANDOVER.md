@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-04 (evening) · **Branch:** `main` · **Status: curriculum shipped — the app now teaches Korean from zero; verified live end-to-end.**
+**Updated:** 2026-07-05 · **Branch:** `main` · **Status: curriculum shipped and verified live. Next up (before GitHub push): a learning-experience polish pass — see item 1 below.**
 
 ## What exists
 
@@ -41,20 +41,50 @@ tab still works (canvas extracted to `HangulCanvas`).
 
 ## What's left (in rough priority order)
 
-1. **Push to GitHub (NEXT)** — repo has no remote; CI has never actually run.
-2. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
+1. **Learning-experience polish (NEXT — founder decisions 2026-07-04, evening).**
+   Three items, one pass:
+   - **Hear every sound you're learning.** Speak blocks already have a listen ▶
+     (TTS per phrase), but the curriculum's teaching surfaces are silent: the
+     letter cards in explain blocks (`chars` segments — ㅏ, ㄱ, 한…) and write
+     blocks have no audio. Learners must hear vowels/consonants/syllables from
+     the very first lesson, and be able to replay them freely. Design nuances to
+     resolve: the TTS endpoint is deliberately locked to `lesson_phrases` ids
+     (bounds TTS spend — don't open it to arbitrary text); bare consonants like
+     ㄱ aren't pronounceable alone (speak the demo syllable, e.g. 가 for ㄱ, or
+     the letter name 기역 — pick one pedagogy). Likely shape: an optional
+     `audio` field on chars/write payloads pointing at authored content the
+     backend will synthesize (whitelisted, cached), not free text.
+   - **Recording should stop itself.** Today the learner must tap the ring to
+     stop. Add silence detection (the `useRecorder` hook already computes a
+     live `level` from a Web Audio analyser — reuse it): auto-stop + submit
+     after ~2–3s of silence once speech was detected, plus a hard cap scaled to
+     the target length (a syllable needs ~4s, a phrase ~10s). Visible countdown
+     /state so it never feels haunted, and the manual stop affordance must stay
+     obvious ("tap to stop") for when auto-stop doesn't fire. Exact thresholds
+     are implementer's choice — founder delegated.
+   - **Visual overhaul — the app should feel alive and unmistakably Korean.**
+     Founder wants users "blown away": motion and polish on loads/transitions
+     (lesson player step transitions, score reveals, pass celebrations, skeleton
+     states instead of spinners), a stronger Korean-rooted visual identity
+     (taegeuk palette exists; push further — typography for the hangul-display
+     moments, texture, dark mode?), PWA-quality feel. Use the frontend-design
+     skill; respect reduced-motion; keep the existing test/gate discipline.
+     This is a design pass, not a rebuild — the block player UX just shipped
+     and works.
+2. **Push to GitHub** — repo has no remote; CI has never actually run.
+3. **Deploy** — per `docs/deployment.md`: backend container (Fly/Railway/Render),
    frontend static host (Vercel/Netlify), env vars at build time for `VITE_*`.
-3. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
+4. **Stripe** — create products/prices ($69 founder one-time, $14.99/mo premium),
    set the four STRIPE_* env vars, point the webhook at
    `/api/billing/webhook`. Until then billing routes 503 (by design).
-4. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
+5. **Production email** — Supabase's built-in SMTP is rate-limited (~3/hr);
    configure custom SMTP before real signups.
-5. **Content depth** — more scenarios (only the café exists; the Talk tab is the
+6. **Content depth** — more scenarios (only the café exists; the Talk tab is the
    marquee feature), audio for lesson phrases is generated on demand (could
    pre-generate + cache in Storage), double vowels (ㅐㅔㅘ…) and tense/aspirated
    consonants as Hangul course lessons 9-10, intro explain blocks for the five
    Speak lessons.
-6. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
+7. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
    scores synthetic/mouse drawings near zero — one config line to swap; matters
    more now that write blocks gate lesson progress), phoneme-level pronunciation
    coaching (needs Azure streaming SDK instead of REST), streaks/gamification,
