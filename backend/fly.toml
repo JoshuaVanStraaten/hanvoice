@@ -1,0 +1,29 @@
+# Fly.io config for the HanVoice API.
+# London: closest hostable region to Supabase (eu-west-1) and Azure Speech
+# (northeurope) — Dublin had no machine capacity at launch time.
+app = "hanvoice-api"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Pre-launch economics: scale to zero when idle, wake on request.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/api/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+# One machine = one uvicorn worker (the in-process rate limiter assumes a
+# single process). Scale with more machines, never more workers.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
