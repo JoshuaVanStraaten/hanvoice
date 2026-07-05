@@ -16,6 +16,7 @@ from app.db.repositories import attempts, content
 from app.db.repositories import usage as usage_repo
 from app.schemas.pronunciation import PronunciationAttemptResponse
 from app.services import progress as progress_service
+from app.services import tts_cache
 from app.services.entitlements import resolve_plan
 from app.services.quota import Metric, ensure_within_quota
 
@@ -89,5 +90,5 @@ async def get_phrase_audio(
     bounded by our own content. Not quota-metered: listening is learning.
     """
     phrase = await content.get_phrase(db, phrase_id)
-    audio = await tts.synthesize(str(phrase["hangul"]))
+    audio = await tts_cache.synthesize_cached(tts, str(phrase["hangul"]))
     return {"audio_base64": base64.b64encode(audio).decode()}

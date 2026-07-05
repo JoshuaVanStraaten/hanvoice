@@ -20,9 +20,18 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+from app.services import tts_cache
 
 SUPABASE_REST = "http://supabase.test/rest/v1"
 SUPABASE_STORAGE = "http://supabase.test/storage/v1"
+
+
+@pytest.fixture(autouse=True)
+def _fresh_tts_cache():
+    """TTS audio is cached process-wide; tests must not leak hits."""
+    tts_cache.clear_cache()
+    yield
+    tts_cache.clear_cache()
 
 
 @pytest.fixture
