@@ -47,7 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { display_name: displayName } },
+        options: {
+          data: { display_name: displayName },
+          // Confirmation emails land back on the origin that signed up (dev
+          // or prod) — both are in the project's redirect allowlist.
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
       if (error) throw new Error(error.message);
     },
