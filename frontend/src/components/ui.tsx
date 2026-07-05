@@ -1,8 +1,16 @@
 /** Small shared UI primitives. Feature components live next to their pages. */
 
+import { useEffect, useState } from "react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { ApiError } from "../lib/api";
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
 
 type ButtonVariant = "primary" | "speak" | "quiet";
 
@@ -105,11 +113,36 @@ export function ErrorNote({ error, retry }: { error: unknown; retry?: () => void
   );
 }
 
-/** 0–100 score shown as a ring; red while low, jade when strong. */
+/** 0–100 score shown as a ring; red while low, jade when strong. The arc
+ * sweeps in and the number counts up on reveal (skipped for reduced motion). */
 export function ScoreRing({ score, label }: { score: number; label: string }) {
   const radius = 26;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, score));
+  const [revealed, setRevealed] = useState(false);
+  const [shown, setShown] = useState(() => (prefersReducedMotion() ? clamped : 0));
+
+  useEffect(() => {
+    // Two frames in: the arc transitions from empty, the number counts up.
+    const frame = requestAnimationFrame(() => setRevealed(true));
+    if (prefersReducedMotion()) {
+      setShown(clamped);
+      return () => cancelAnimationFrame(frame);
+    }
+    const startedAt = performance.now();
+    let counting: number;
+    const count = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / 700);
+      setShown(clamped * (1 - (1 - t) ** 3)); // ease-out cubic
+      if (t < 1) counting = requestAnimationFrame(count);
+    };
+    counting = requestAnimationFrame(count);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(counting);
+    };
+  }, [clamped]);
+
   const color =
     clamped >= 80 ? "var(--color-jade)" : clamped >= 60 ? "var(--color-taegeuk-blue)" : "var(--color-taegeuk-red)";
   return (
@@ -117,6 +150,7 @@ export function ScoreRing({ score, label }: { score: number; label: string }) {
       <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${label}: ${Math.round(clamped)} out of 100`}>
         <circle cx="32" cy="32" r={radius} fill="none" stroke="var(--color-line)" strokeWidth="6" />
         <circle
+          className="score-arc"
           cx="32"
           cy="32"
           r={radius}
@@ -125,11 +159,11 @@ export function ScoreRing({ score, label }: { score: number; label: string }) {
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - clamped / 100)}
+          strokeDashoffset={circumference * (1 - (revealed ? clamped : 0) / 100)}
           transform="rotate(-90 32 32)"
         />
         <text x="32" y="37" textAnchor="middle" className="fill-ink text-sm font-bold">
-          {Math.round(clamped)}
+          {Math.round(shown)}
         </text>
       </svg>
       <span className="text-xs text-ink-soft">{label}</span>

@@ -147,20 +147,21 @@ function LessonPlayer({ lesson }: { lesson: LessonDetail }) {
         used={passedCount}
         limit={blocks.length}
       />
-      <Card className="space-y-3">
-        {block.passed && (
-          <p className="text-right text-xs font-semibold text-jade" aria-label="Already passed">
-            Passed ✓
-          </p>
-        )}
-        <BlockBody
-          key={block.id}
-          block={block}
-          completing={completeBlock.isPending}
-          onSelfComplete={() => selfComplete(block)}
-          onScoredPass={scoredPass}
-          onAdvance={advance}
-        />
+      <Card>
+        <div key={block.id} className="block-enter space-y-3">
+          {block.passed && (
+            <p className="text-right text-xs font-semibold text-jade" aria-label="Already passed">
+              Passed ✓
+            </p>
+          )}
+          <BlockBody
+            block={block}
+            completing={completeBlock.isPending}
+            onSelfComplete={() => selfComplete(block)}
+            onScoredPass={scoredPass}
+            onAdvance={advance}
+          />
+        </div>
       </Card>
       <div className="flex justify-between">
         <Button variant="quiet" onClick={() => setIndex(index - 1)} disabled={index === 0}>

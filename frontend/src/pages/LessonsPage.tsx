@@ -49,10 +49,14 @@ export function LessonsPage() {
               </h2>
             )}
             <ul className="space-y-3">
-              {group.lessons.map((lesson) => {
+              {group.lessons.map((lesson, index) => {
                 const state = progressBySlug.get(lesson.slug);
                 return (
-                  <li key={lesson.id}>
+                  <li
+                    key={lesson.id}
+                    className="rise-in"
+                    style={{ animationDelay: `${Math.min(index * 45, 270)}ms` }}
+                  >
                     <Link to={`/lessons/${lesson.slug}`} className="block">
                       <Card className="space-y-2 transition-colors hover:border-taegeuk-blue">
                         <div className="flex items-center justify-between">
