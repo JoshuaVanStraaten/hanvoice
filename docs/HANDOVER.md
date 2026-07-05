@@ -37,6 +37,13 @@ tab still works (canvas extracted to `HangulCanvas`).
   - Verified live: login, cross-origin usage read (CORS), scored pronunciation
     attempt (79.6) metering usage, block teaching-audio endpoint, service
     worker active + installable manifest.
+  - Auth email redirects fixed (`45acdc8`): Supabase `site_url` →
+    hanvoice.vercel.app with prod+localhost:5173 allowlist (pushed via
+    `supabase config push`; `supabase/config.toml` now mirrors the remote auth
+    config — keep it that way, a push syncs the whole [auth] block), and
+    `signUp` passes `emailRedirectTo` per origin. Confirmation links sent
+    *before* the fix still embed localhost:3000 — old pending signups should
+    just sign in (token already consumed) or re-request.
 - **Supabase project `hanvoice`** (`mxibibkcaarltsbkomvm`, eu-west-1, free tier) —
   migrated + seeded. `frontend/.env` and `backend/.env` are wired (gitignored).
 - **Content:** 13 lessons in two sections — **"Read & write Hangul"** (8 lessons,
