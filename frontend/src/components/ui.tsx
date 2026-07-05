@@ -123,24 +123,20 @@ export function ScoreRing({ score, label }: { score: number; label: string }) {
   const [shown, setShown] = useState(() => (prefersReducedMotion() ? clamped : 0));
 
   useEffect(() => {
-    // Two frames in: the arc transitions from empty, the number counts up.
-    const frame = requestAnimationFrame(() => setRevealed(true));
-    if (prefersReducedMotion()) {
-      setShown(clamped);
-      return () => cancelAnimationFrame(frame);
-    }
+    // A frame in: the arc transitions from empty, the number counts up.
     const startedAt = performance.now();
-    let counting: number;
-    const count = (now: number) => {
+    const reduce = prefersReducedMotion();
+    let frame = requestAnimationFrame(function step(now: number) {
+      setRevealed(true);
+      if (reduce) {
+        setShown(clamped);
+        return;
+      }
       const t = Math.min(1, (now - startedAt) / 700);
       setShown(clamped * (1 - (1 - t) ** 3)); // ease-out cubic
-      if (t < 1) counting = requestAnimationFrame(count);
-    };
-    counting = requestAnimationFrame(count);
-    return () => {
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(counting);
-    };
+      if (t < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [clamped]);
 
   const color =
