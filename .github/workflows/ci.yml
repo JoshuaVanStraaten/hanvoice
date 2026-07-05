@@ -24,7 +24,9 @@ jobs:
       - name: Types (mypy strict)
         run: mypy app
       - name: Tests
-        run: pytest -q
+        # python -m puts backend/ on sys.path so `tests.*` imports resolve,
+        # matching how the suite is run locally.
+        run: python -m pytest -q
 
   frontend:
     runs-on: ubuntu-latest
