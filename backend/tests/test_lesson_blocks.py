@@ -20,6 +20,7 @@ from tests.factories import (
 )
 
 VISION_URL = "http://nvidia.test/vision"
+TTS_URL = "https://koreacentral.tts.speech.microsoft.com/cognitiveservices/v1"
 FAKE_PNG_B64 = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"fakepixels").decode()
 
 
@@ -198,3 +199,87 @@ def test_handwriting_block_must_be_write_kind(client):
     )
 
     assert response.status_code == 400
+
+
+@respx.mock
+def test_block_audio_synthesizes_carrier_for_write_target(client):
+    mock_get("lesson_blocks", [block_row(1, "write", payload={"target": "ㄱ"})])
+    mock_get("lessons", [lesson_row()])
+    tts = respx.mock.post(TTS_URL).mock(
+        return_value=httpx.Response(200, content=b"ID3mp3bytes")
+    )
+
+    response = client.get(
+        "/api/lessons/blocks/1/audio", params={"text": "가"}, headers=auth_headers()
+    )
+
+    assert response.status_code == 200
+    assert base64.b64decode(response.json()["audio_base64"]) == b"ID3mp3bytes"
+    assert "가" in tts.calls[0].request.content.decode()
+
+
+@respx.mock
+def test_block_audio_allows_explain_chars_and_examples(client):
+    payload = {
+        "segments": [
+            {"type": "chars", "items": [{"ko": "ㅏ"}]},
+            {"type": "example", "items": [{"ko": "한국"}]},
+        ]
+    }
+    mock_get("lesson_blocks", [block_row(1, "explain", payload=payload)])
+    mock_get("lessons", [lesson_row()])
+    tts = respx.mock.post(TTS_URL).mock(
+        return_value=httpx.Response(200, content=b"ID3mp3bytes")
+    )
+
+    for text in ("아", "한국"):
+        response = client.get(
+            "/api/lessons/blocks/1/audio", params={"text": text}, headers=auth_headers()
+        )
+        assert response.status_code == 200
+    assert tts.call_count == 2
+
+
+@respx.mock
+def test_block_audio_rejects_text_not_in_block(client):
+    mock_get("lesson_blocks", [block_row(1, "write", payload={"target": "ㄱ"})])
+    mock_get("lessons", [lesson_row()])
+    tts = respx.mock.post(TTS_URL)
+
+    response = client.get(
+        "/api/lessons/blocks/1/audio",
+        params={"text": "아무 말이나"},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 400
+    assert tts.call_count == 0
+
+
+@respx.mock
+def test_block_audio_unpublished_lesson_404(client):
+    mock_get("lesson_blocks", [block_row(1, "write", payload={"target": "ㄱ"})])
+    mock_get("lessons", [])
+
+    response = client.get(
+        "/api/lessons/blocks/1/audio", params={"text": "가"}, headers=auth_headers()
+    )
+
+    assert response.status_code == 404
+
+
+@respx.mock
+def test_block_audio_repeat_request_hits_cache(client):
+    mock_get("lesson_blocks", [block_row(1, "write", payload={"target": "ㄱ"})])
+    mock_get("lessons", [lesson_row()])
+    tts = respx.mock.post(TTS_URL).mock(
+        return_value=httpx.Response(200, content=b"ID3mp3bytes")
+    )
+
+    for _ in range(2):
+        response = client.get(
+            "/api/lessons/blocks/1/audio", params={"text": "가"}, headers=auth_headers()
+        )
+        assert response.status_code == 200
+
+    assert tts.call_count == 1

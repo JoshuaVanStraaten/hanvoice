@@ -2,7 +2,7 @@
 
 Teaching audio is a tiny closed vocabulary (carrier syllables, phrase text),
 so one process-wide dict turns almost every listen into a cache hit. Bytes
-per entry are ~10–30 KB of mp3; 256 entries is comfortably the whole
+per entry are ~10-30 KB of mp3; 256 entries is comfortably the whole
 curriculum with room to grow. Per-process only — with one uvicorn worker
 (deployment requirement for the rate limiter) that is the whole app.
 """

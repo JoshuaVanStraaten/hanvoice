@@ -1,7 +1,10 @@
-from fastapi import APIRouter
+import base64
 
-from app.api.deps import CurrentUser, Db
+from fastapi import APIRouter, Depends, Query
+
+from app.api.deps import CurrentUser, Db, Tts
 from app.core.errors import BadRequestError
+from app.core.ratelimit import rate_limit
 from app.db.repositories import content
 from app.db.repositories import progress as progress_repo
 from app.schemas.content import (
@@ -13,6 +16,8 @@ from app.schemas.content import (
     ScenarioSummary,
 )
 from app.services import progress as progress_service
+from app.services import tts_cache
+from app.services.audio_text import allowed_audio_texts
 
 router = APIRouter(tags=["content"])
 
@@ -79,6 +84,33 @@ async def complete_block(
         block_count=block_count,
         lesson_completed=lesson_completed,
     )
+
+
+@router.get(
+    "/lessons/blocks/{block_id}/audio",
+    dependencies=[Depends(rate_limit(max_requests=30, window_seconds=60))],
+)
+async def get_block_audio(
+    block_id: int,
+    user: CurrentUser,
+    db: Db,
+    tts: Tts,
+    text: str = Query(max_length=50),
+) -> dict[str, str]:
+    """Teaching audio for a glyph on this block, synthesized on demand.
+
+    Like phrase audio, the spend is bounded by our own content: ``text`` must
+    be one of the strings this block's payload is allowed to speak (carrier
+    syllables for bare jamo — see ``audio_text_for``). Not quota-metered:
+    listening is learning.
+    """
+    block = await content.get_block(db, block_id)
+    await content.get_published_lesson_by_id(db, int(block["lesson_id"]))
+    allowed = allowed_audio_texts(str(block["kind"]), block.get("payload") or {})
+    if text not in allowed:
+        raise BadRequestError("This block has no such audio.")
+    audio = await tts_cache.synthesize_cached(tts, text)
+    return {"audio_base64": base64.b64encode(audio).decode()}
 
 
 @router.get("/scenarios", response_model=list[ScenarioSummary])
