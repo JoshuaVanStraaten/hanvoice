@@ -1,3 +1,9 @@
+/* Hangul display face: a myeongjo (Korean serif) so taught glyphs show real
+   stroke anatomy — brush terminals, thick/thin contrast — not UI-sans
+   geometry. Self-hosted, unicode-range subset: browsers fetch only the
+   slices a page actually renders. */
+@import "@fontsource/noto-serif-kr/700.css";
+
 @import "tailwindcss";
 
 /* HanVoice design tokens — "hanji & taegeuk".
@@ -19,6 +25,8 @@
   --font-sans:
     "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
     system-ui, sans-serif;
+  --font-serif-ko:
+    "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
 
   --radius-card: 1rem;
 }
@@ -27,17 +35,31 @@ html {
   background: var(--color-paper);
 }
 
+/* Hanji fiber: a whisper of turbulence noise over the paper. Kept on a body
+   pseudo-element so it never tints raised cards. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23h)'/%3E%3C/svg%3E");
+}
+
 body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Hangul display text — the app's real "display face". */
+/* Hangul display text — the app's real "display face": myeongjo serif so
+   learners study glyphs with true stroke anatomy. */
 .hangul-display {
+  font-family: var(--font-serif-ko);
   font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: 1.35;
   word-break: keep-all;
 }
 
@@ -58,11 +80,103 @@ body {
   animation: speak-ring 1.6s ease-out infinite;
 }
 
+/* One block at a time: each step slides up out of the paper. */
+@keyframes block-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.block-enter {
+  animation: block-enter 280ms ease-out both;
+}
+
+/* Staggered list reveal — pair with an inline animation-delay. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 360ms ease-out both;
+}
+
+/* Skeletons: paper-toned shimmer while content loads. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    var(--color-line) 40%,
+    var(--color-paper-raised) 50%,
+    var(--color-line) 60%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+/* The dojang: a red seal stamped onto the paper on a pass. */
+@keyframes dojang-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.7) rotate(-14deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94) rotate(-7deg);
+  }
+  75% {
+    transform: scale(1.04) rotate(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-8deg);
+  }
+}
+
+.dojang-stamp {
+  animation: dojang-stamp 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* ScoreRing draw-in: the arc sweeps from empty to the score. */
+.score-arc {
+  transition: stroke-dashoffset 700ms cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .speak-ring-active {
     animation: none;
     outline: 3px solid rgb(199 62 58 / 0.4);
     outline-offset: 4px;
+  }
+  .block-enter,
+  .rise-in,
+  .dojang-stamp {
+    animation-duration: 1ms;
+  }
+  .skeleton {
+    animation: none;
+  }
+  .score-arc {
+    transition: none;
   }
 }
 

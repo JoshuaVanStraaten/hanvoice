@@ -15,8 +15,8 @@ export default defineConfig({
         short_name: "HanVoice",
         description:
           "Learn to speak Korean out loud: pronunciation scoring, AI conversations, and Hangul writing practice.",
-        theme_color: "#0f172a",
-        background_color: "#0f172a",
+        theme_color: "#f6f4ef",
+        background_color: "#f6f4ef",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
@@ -33,9 +33,22 @@ export default defineConfig({
       },
       workbox: {
         // App shell + static assets cached; API calls always hit the network
-        // (scores and conversations must never be stale).
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        // (scores and conversations must never be stale). Font subsets are
+        // NOT precached — Noto Serif KR ships ~100 unicode-range slices and
+        // a browser only ever pulls a handful; they're cached as they're
+        // fetched instead.
+        globPatterns: ["**/*.{js,css,html,svg,png}"],
         navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /\.woff2$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "fonts",
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
       },
     }),
   ],
