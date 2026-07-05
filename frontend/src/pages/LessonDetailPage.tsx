@@ -11,7 +11,7 @@ import { ExplainBlock } from "../components/blocks/ExplainBlock";
 import { QuizBlock } from "../components/blocks/QuizBlock";
 import { SpeakBlock } from "../components/blocks/SpeakBlock";
 import { WriteBlock } from "../components/blocks/WriteBlock";
-import { Button, Card, ErrorNote, MeterBar, Spinner } from "../components/ui";
+import { Button, Card, ErrorNote, MeterBar, SkeletonCards } from "../components/ui";
 import { useCompleteBlock, useLesson } from "../hooks/queries";
 import type { LessonBlock, LessonDetail } from "../lib/types";
 
@@ -194,7 +194,7 @@ export function LessonDetailPage() {
         )}
       </header>
 
-      {lesson.isPending && <Spinner label="Loading lesson" />}
+      {lesson.isPending && <SkeletonCards count={1} label="Loading lesson" />}
       {lesson.isError && <ErrorNote error={lesson.error} retry={() => void lesson.refetch()} />}
 
       {lesson.isSuccess && <LessonPlayer key={slug} lesson={lesson.data} />}

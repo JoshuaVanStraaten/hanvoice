@@ -4,7 +4,7 @@
 
 import { Link } from "react-router-dom";
 
-import { Button, Card, ErrorNote, MeterBar, Spinner } from "../components/ui";
+import { Button, Card, ErrorNote, MeterBar, SkeletonCards } from "../components/ui";
 import {
   useLessons,
   useMe,
@@ -55,7 +55,7 @@ export function DashboardPage() {
         <h2 id="usage-heading" className="mb-2 text-sm font-semibold text-ink-soft">
           Today&apos;s practice
         </h2>
-        {usage.isPending && <Spinner label="Loading usage" />}
+        {usage.isPending && <SkeletonCards count={1} label="Loading usage" />}
         {usage.isError && <ErrorNote error={usage.error} retry={() => void usage.refetch()} />}
         {usage.isSuccess && (
           <Card className="space-y-3">
@@ -91,7 +91,9 @@ export function DashboardPage() {
         <h2 id="continue-heading" className="text-sm font-semibold text-ink-soft">
           Keep going
         </h2>
-        {(lessons.isPending || progress.isPending) && <Spinner label="Loading lessons" />}
+        {(lessons.isPending || progress.isPending) && (
+          <SkeletonCards count={2} label="Loading lessons" />
+        )}
         {lessons.isError && (
           <ErrorNote error={lessons.error} retry={() => void lessons.refetch()} />
         )}

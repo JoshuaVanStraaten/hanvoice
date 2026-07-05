@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Card, ErrorNote, MeterBar, Spinner } from "../components/ui";
+import { Card, ErrorNote, MeterBar, SkeletonCards } from "../components/ui";
 import { useLessons, useProgress } from "../hooks/queries";
 import type { LessonSummary } from "../lib/types";
 
@@ -35,7 +35,7 @@ export function LessonsPage() {
         </p>
       </header>
 
-      {lessons.isPending && <Spinner label="Loading lessons" />}
+      {lessons.isPending && <SkeletonCards count={4} label="Loading lessons" />}
       {lessons.isError && (
         <ErrorNote error={lessons.error} retry={() => void lessons.refetch()} />
       )}

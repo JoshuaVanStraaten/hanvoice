@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Card, ErrorNote, MeterBar, Spinner } from "../components/ui";
+import { Card, ErrorNote, MeterBar, SkeletonCards } from "../components/ui";
 import { useProgress } from "../hooks/queries";
 
 export function ProgressPage() {
@@ -13,7 +13,7 @@ export function ProgressPage() {
         <p className="text-sm text-ink-soft">Every phrase you pass stays passed.</p>
       </header>
 
-      {progress.isPending && <Spinner label="Loading progress" />}
+      {progress.isPending && <SkeletonCards count={3} label="Loading progress" />}
       {progress.isError && (
         <ErrorNote error={progress.error} retry={() => void progress.refetch()} />
       )}

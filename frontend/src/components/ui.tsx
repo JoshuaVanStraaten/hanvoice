@@ -42,6 +42,30 @@ export function Card({
   );
 }
 
+/** A shimmering placeholder shaped like the content it becomes. */
+export function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`skeleton rounded-lg ${className}`} aria-hidden />;
+}
+
+/** Card-shaped loading state for lists (lessons, progress). */
+export function SkeletonCards({ count = 3, label = "Loading" }: { count?: number; label?: string }) {
+  return (
+    <div className="space-y-3" role="status" aria-label={label}>
+      {Array.from({ length: count }, (_, index) => (
+        <div
+          key={index}
+          className="space-y-3 rounded-(--radius-card) border border-line bg-paper-raised p-4"
+        >
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-3 w-2/3" />
+          <Skeleton className="h-1.5 w-full" />
+        </div>
+      ))}
+      <span className="sr-only">{label}</span>
+    </div>
+  );
+}
+
 export function Spinner({ label = "Loading" }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-2 py-8 text-ink-soft" role="status">

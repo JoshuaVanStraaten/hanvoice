@@ -2,7 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../lib/api";
-import { ErrorNote, MeterBar, ScoreRing } from "./ui";
+import { ErrorNote, MeterBar, ScoreRing, SkeletonCards } from "./ui";
+
+describe("SkeletonCards", () => {
+  it("announces itself as a labelled loading status", () => {
+    render(<SkeletonCards count={2} label="Loading lessons" />);
+    expect(screen.getByRole("status", { name: "Loading lessons" })).toBeInTheDocument();
+  });
+});
 
 describe("ScoreRing", () => {
   it("renders the rounded score with an accessible label", () => {
