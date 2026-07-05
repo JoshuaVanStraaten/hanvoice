@@ -16,6 +16,19 @@ import type { LessonPhrase, PronunciationAttempt } from "../../lib/types";
 
 const PASS_THRESHOLD = 60;
 
+/** Hard cap for one take, scaled to the phrase: a syllable needs ~4 s, a
+ * long phrase up to 12 s. The silence gate usually fires well before this. */
+export function recordingCapMs(hangul: string): number {
+  const syllables = (hangul.match(/[가-힣]/g) ?? []).length || 1;
+  return Math.min(4000 + 1600 * (syllables - 1), 12_000);
+}
+
+const PHASE_CAPTION = {
+  armed: "Listening — speak now",
+  hearing: "Got it — pause when you're done, or tap to stop",
+  finishing: "Finishing…",
+} as const;
+
 interface WordScore {
   word: string;
   accuracy: number | null;
@@ -122,6 +135,7 @@ export function SpeakBlock({
   const recorder = useRecorder();
   const invalidateActivity = useActivityInvalidation();
   const [attempt, setAttempt] = useState<PronunciationAttempt | null>(null);
+  const [heardNothing, setHeardNothing] = useState(false);
 
   const scoreAttempt = useMutation({
     mutationFn: async (audio: Blob) => {
@@ -144,7 +158,12 @@ export function SpeakBlock({
       return;
     }
     scoreAttempt.reset();
-    await recorder.start();
+    setHeardNothing(false);
+    await recorder.start({
+      maxDurationMs: recordingCapMs(phrase.hangul),
+      onAutoStop: (audio) => scoreAttempt.mutate(audio),
+      onSilentDiscard: () => setHeardNothing(true),
+    });
   }
 
   const passed = attempt !== null && attempt.scores.overall >= PASS_THRESHOLD;
@@ -170,10 +189,21 @@ export function SpeakBlock({
             onPress={() => void handlePress()}
             disabled={scoreAttempt.isPending}
             level={recorder.level}
+            silenceProgress={recorder.silenceProgress}
           />
         </div>
       </div>
 
+      {recorder.isRecording && recorder.phase !== "idle" && (
+        <p className="text-center text-sm text-ink-soft" role="status">
+          {PHASE_CAPTION[recorder.phase]}
+        </p>
+      )}
+      {heardNothing && !recorder.isRecording && (
+        <p className="text-center text-sm text-ink-soft" role="status">
+          We didn't hear anything — check your mic and try again.
+        </p>
+      )}
       {recorder.error && (
         <p role="alert" className="text-sm text-taegeuk-red">
           {recorder.error}

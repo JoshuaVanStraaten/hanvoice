@@ -36,12 +36,40 @@ function VoiceBars({ level }: { level: number }) {
   );
 }
 
+/** Countdown ring while the silence gate runs down — the visible promise
+ * that auto-stop is about to fire, so it never feels haunted. */
+function SilenceArc({ progress }: { progress: number }) {
+  const radius = 46;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className="pointer-events-none absolute inset-0 size-full -rotate-90 motion-reduce:hidden"
+      aria-hidden
+    >
+      <circle
+        cx="50"
+        cy="50"
+        r={radius}
+        fill="none"
+        stroke="white"
+        strokeOpacity="0.9"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference * progress}
+      />
+    </svg>
+  );
+}
+
 export function RecordButton({
   isRecording,
   onPress,
   disabled = false,
   size = "md",
   level = 0,
+  silenceProgress = 0,
 }: {
   isRecording: boolean;
   onPress: () => void;
@@ -49,6 +77,8 @@ export function RecordButton({
   size?: "md" | "lg";
   /** Live mic loudness (0-1) shown as dancing bars while recording. */
   level?: number;
+  /** 0-1 through the auto-stop silence window; > 0 draws the countdown arc. */
+  silenceProgress?: number;
 }) {
   return (
     <button
@@ -60,11 +90,12 @@ export function RecordButton({
       aria-pressed={isRecording}
       className={[
         size === "lg" ? "size-16" : "size-12",
-        "flex items-center justify-center rounded-full text-white transition-colors",
+        "relative flex items-center justify-center rounded-full text-white transition-colors",
         "bg-taegeuk-red hover:bg-taegeuk-red-deep disabled:cursor-not-allowed disabled:bg-ink-soft/40",
         isRecording ? "speak-ring-active" : "",
       ].join(" ")}
     >
+      {isRecording && silenceProgress > 0 && <SilenceArc progress={silenceProgress} />}
       {isRecording ? <VoiceBars level={level} /> : MIC_ICON}
     </button>
   );

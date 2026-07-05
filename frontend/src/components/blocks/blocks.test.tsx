@@ -4,13 +4,35 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ExplainBlock } from "./ExplainBlock";
 import { QuizBlock } from "./QuizBlock";
+import { SpeakBlock, recordingCapMs } from "./SpeakBlock";
 import { WriteBlock } from "./WriteBlock";
 import { apiGet } from "../../lib/api";
+import type { Recorder, RecorderPhase, StartOptions } from "../../hooks/useRecorder";
 import type { ExplainPayload, QuizPayload } from "../../lib/types";
 
 vi.mock("../../lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../lib/api")>()),
   apiGet: vi.fn(),
+}));
+
+/** Controllable stand-in for the mic — tests drive phase/isRecording. */
+const recorderState: Omit<Recorder, "start" | "stop"> & {
+  isRecording: boolean;
+  phase: RecorderPhase;
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+} = {
+  isRecording: false,
+  level: 0,
+  phase: "idle",
+  silenceProgress: 0,
+  error: null,
+  start: vi.fn(async () => undefined),
+  stop: vi.fn(async () => null),
+};
+
+vi.mock("../../hooks/useRecorder", () => ({
+  useRecorder: () => recorderState,
 }));
 
 const playSpy = vi.fn(() => Promise.resolve());
@@ -25,6 +47,9 @@ vi.stubGlobal(
 beforeEach(() => {
   vi.mocked(apiGet).mockReset();
   playSpy.mockClear();
+  recorderState.start.mockClear();
+  recorderState.isRecording = false;
+  recorderState.phase = "idle";
 });
 
 function withQueryClient(ui: React.ReactElement) {
@@ -96,6 +121,54 @@ describe("ExplainBlock", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "Hear 가요" })).toBeInTheDocument();
+  });
+});
+
+describe("recordingCapMs", () => {
+  it("scales the hard cap with syllable count, clamped to 4-12 s", () => {
+    expect(recordingCapMs("가")).toBe(4000);
+    expect(recordingCapMs("주세요")).toBe(7200);
+    expect(recordingCapMs("아이스 아메리카노 주세요")).toBe(12_000);
+  });
+});
+
+const testPhrase = {
+  id: 1,
+  hangul: "가",
+  romanized: "ga",
+  english: "go",
+  audio_url: null,
+  sort_order: 1,
+};
+
+describe("SpeakBlock auto-stop", () => {
+  it("shows the gate caption and countdown state while recording", () => {
+    recorderState.isRecording = true;
+    recorderState.phase = "finishing";
+    render(
+      withQueryClient(
+        <SpeakBlock phrase={testPhrase} onPassed={vi.fn()} onContinue={vi.fn()} />,
+      ),
+    );
+    expect(screen.getByText("Finishing…")).toBeInTheDocument();
+  });
+
+  it("passes a syllable-scaled cap and surfaces a discarded silent take", async () => {
+    recorderState.isRecording = false;
+    recorderState.phase = "idle";
+    render(
+      withQueryClient(
+        <SpeakBlock phrase={testPhrase} onPassed={vi.fn()} onContinue={vi.fn()} />,
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Start recording" }));
+    await waitFor(() => expect(recorderState.start).toHaveBeenCalledTimes(1));
+    const options = recorderState.start.mock.calls[0]?.[0] as StartOptions;
+    expect(options.maxDurationMs).toBe(4000);
+
+    options.onSilentDiscard?.();
+    await screen.findByText(/We didn't hear anything/);
   });
 });
 
