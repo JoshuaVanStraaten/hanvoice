@@ -7,8 +7,8 @@
 The full application (M1–M10 of `docs/superpowers/plans/2026-07-03-hanvoice-full-app.md`)
 plus the **real curriculum** (`docs/superpowers/plans/2026-07-04-lesson-blocks-curriculum.md`,
 design in `docs/superpowers/specs/2026-07-04-lesson-blocks-curriculum-design.md`):
-FastAPI backend (97 tests; ruff + strict mypy clean), React PWA frontend
-(17 tests; eslint + tsc clean), Docker images smoke-tested, CI workflow written.
+FastAPI backend (112 tests; ruff + strict mypy clean), React PWA frontend
+(37 tests; eslint + tsc clean), Docker images smoke-tested, CI workflow written.
 See `README.md`, `docs/architecture.md`, `docs/api.md`, `docs/deployment.md`, `docs/schema.md`.
 
 **Curriculum architecture (new):** lessons are ordered `lesson_blocks`
@@ -54,7 +54,11 @@ tab still works (canvas extracted to `HangulCanvas`).
    pre-generate + cache in Storage), double vowels (ㅐㅔㅘ…) and tense/aspirated
    consonants as Hangul course lessons 9-10, intro explain blocks for the five
    Speak lessons.
-6. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
+6. **Data nit (test account only):** lessons passed *before* the blocks
+   migration (café essentials) have a completed `lesson_progress` rollup but no
+   `lesson_block_progress` rows, so the player starts them at step 1 unpassed.
+   Real users all start post-migration; backfill or ignore.
+7. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
    scores synthetic/mouse drawings near zero — one config line to swap; matters
    more now that write blocks gate lesson progress), phoneme-level pronunciation
    coaching (needs Azure streaming SDK instead of REST), streaks/gamification,
@@ -72,11 +76,15 @@ asks from 2026-07-04 evening, all shipped and verified (112 backend / 37
 frontend tests green):
 
 - **Audio on every teaching surface.** `chars`/`write`/`example` payloads carry
-  an optional `audio` field; a jamo carrier map (`hangulAudio.ts` /
-  `nemotron`?) resolves bare consonants to a spoken carrier syllable (ㄱ → 가,
-  shown as "in 가"). New block-scoped audio endpoint + backend in-process LRU
-  cache for TTS synthesis (`d875ba3`, `3258a47`). `AudioButton` component reused
-  across explain/write/speak blocks.
+  an optional `audio` field; a jamo carrier map (frontend `lib/hangulAudio.ts`,
+  backend `services/audio_text.py` — keep in sync) resolves bare jamo to a
+  spoken carrier syllable (ㄱ → 가, ㅏ → 아, shown as "in 가"). New
+  block-scoped audio endpoint `GET /lessons/blocks/{id}/audio?text=…`
+  (whitelisted against the block's own payload) + backend in-process LRU
+  cache for TTS synthesis (`d875ba3`, `3258a47`). `AudioButton` component
+  reused across explain/write/speak blocks. Silence-gate thresholds live in
+  `lib/silenceGate.ts` (onset 0.15, silence 0.08, 2.5 s window; cap 4–12 s
+  via `recordingCapMs`); silent takes are discarded, never scored.
 - **Recording stops itself.** Silence-gate state machine in the recorder
   (`86a4b82`, `61a0c65`) — auto-stops and submits after sustained silence,
   visible state so it's never ambiguous, manual stop still works.
