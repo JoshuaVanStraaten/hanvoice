@@ -96,6 +96,73 @@ Each item: **what · where · impact**. Severity = distance from revenue.
     romanization toggle, audio pre-generation, N+1 lesson queries) — stays in
     HANDOVER item 5; none of it blocks the first customer.
 
+## Educational — Session 2 audit, 2026-07-12: can it teach conversational Korean?
+
+Judged as a Korean-language educator against the make-or-break question:
+*can a complete beginner reach basic conversational ability?* Verdict:
+**the Hangul course (lessons 1–8) is genuinely good pedagogy** — mouth-shape
+mnemonics, do-to-pass gating, correct ordering through syllable building,
+batchim, and sound change — and the café prompt is well-designed scene work
+(beat structure, in-character corrections, one question per turn). But today
+the app teaches a learner to *read most Hangul* and *pronounce 36 phrases*.
+It does not yet build listening, recall, or enough language to hold any
+conversation beyond the café script. Findings, severity = distance from a
+learner reaching conversation (and staying subscribed):
+
+20. **The Hangul course teaches 21 of 40 letters — and lesson 8 uses letters
+    it never taught.** (High) Missing entirely: aspirated ㅋㅌㅍㅊ, tense
+    ㄲㄸㅃㅆㅉ, compound vowels ㅐㅔㅒㅖㅘㅙㅚㅝㅞㅟㅢ. Concretely broken
+    sequencing: lesson 8 has learners read/speak 커피 (ㅋ, ㅍ), 김치 (ㅊ),
+    and 주세요 (ㅔ) — none taught. Learners also can't read 네, 얼마예요,
+    뭐예요, 반가워요 from the Speak lessons. Fix is content-only: 2 new
+    lessons (aspirated+tense; compound vowels) inserted *before*
+    `read-and-say-it`. (Extends HANDOVER item 3.)
+21. **Content wall at day 2–3.** (High) ~3–4 h of Hangul course + 25 speak
+    phrases (~1 h) + one 5-minute scenario. A motivated beginner exhausts
+    everything in a weekend, well short of conversational ability — then has
+    nothing to subscribe *to*. $69 lifetime buys ~5 h of content. Vocabulary
+    is ~60–70 unique words vs ~300 for survival-level conversation.
+22. **No retention mechanic — judged: fatal for the mission, High for the
+    first sale.** Nothing resurfaces learned material (no review, SRS,
+    streak, or reminder). Speech requires *recall*, and single-exposure
+    recall decays in days — so "HanVoice takes you to conversation" is not
+    honest without review. The first $69 sale can still ride day-1/2
+    enthusiasm, which is why this is High not Critical. Minimum fix, not an
+    SRS engine: a daily review deck of already-passed phrases on fixed 1/3/7
+    day intervals + a visible streak.
+23. **Zero listening comprehension training.** (Medium-High) Every mechanic
+    scores *production*; nothing trains parsing Korean by ear — yet Talk
+    requires understanding Minji at speed, and her English translation is
+    always on screen, so users read instead of listen. Cheap fix within the
+    existing block system: quiz blocks with an audio prompt (hear → choose
+    meaning), and a "hide translation" toggle in Talk.
+24. **Number-system mismatch breaks the money loop.** (Medium) `money-talk`
+    teaches native numbers 하나 둘 셋; prices in Korea (and in the café
+    scenario: 사천오백 원) use sino-Korean numbers, which are taught
+    nowhere. The learner is taught to ask 얼마예요? but cannot understand
+    any answer to it. Fix: a sino-numbers/prices micro-lesson; native
+    numbers can wait.
+25. **Speak lessons are bare phrase lists with no scaffolding.** (Medium)
+    No intro explain blocks (HANDOVER item 3), and no pattern extraction:
+    주세요 appears in 6 phrases across 4 lessons and is never called out as
+    "NOUN + 주세요 = please give me NOUN"; 이에요/예요 and 네/아니요 are
+    never taught at all. One explain block per Speak lesson + 2–3 pattern
+    micro-lessons converts memorized strings into generative language.
+26. **Lesson→scenario loop is broken.** (Medium, pairs with item 9)
+    restaurant-basics, getting-around, and money-talk teach phrases with no
+    scenario to use them in — the practice feature that would cement them
+    (and justify paying) doesn't exist for 4 of 5 Speak lessons. Scenario
+    per existing lesson first; new topics second.
+
+**Minimum path to "basic conversational ability"** (specification, not
+feature wishlist — everything is INSERTs + two small mechanics):
+complete Hangul (2 lessons) → sino-numbers + 이에요/예요 + 주세요-pattern
+micro-lessons (3 lessons) → intro blocks on Speak lessons → 4 scenarios
+matching existing Speak lessons → audio-quiz listening blocks → 1/3/7-day
+review deck + streak. Roughly: ~10 content INSERTs, 1 new quiz payload
+variant, 1 review mechanic. That is the whole gap between "Hangul app" and
+"conversation app".
+
 ## What's already good (don't fix what isn't broken)
 
 Marketing landing page exists and is strong (hero, demo phrase, 3 features,

@@ -1,0 +1,117 @@
+# HanVoice Roadmap — road to the first paying customer
+
+**Created:** 2026-07-12 (Session 2 of 5) · **Sources:** `docs/BACKLOG.md`
+items 1–26 (Session 1 product/tech audit + Session 2 educational audit).
+Backlog item numbers in parentheses.
+
+**Decision rule applied to every item:** *will this materially increase the
+probability of the first paying customer?* If the answer needed a story
+longer than one sentence, the item went to Future or the NOT list.
+
+---
+
+## Immediate — before driving any traffic (~2 weeks)
+
+Revenue is structurally impossible and the front door leaks; fix both, then
+make the marquee feature worth paying for. Nothing else jumps this queue.
+
+1. **Stripe activation** (1) — products/prices ($69 founder, $14.99/mo),
+   4 Fly secrets, webhook. *Payoff: revenue goes from impossible to possible.*
+2. **Custom SMTP** (2) — Resend/Postmark for Supabase auth mail.
+   *Payoff: the 4th signup in an hour stops being silently lost at the door.*
+3. **Analytics + funnel events** (3) — PostHog; landing → signup → confirmed
+   → first lesson → first score → upgrade click. *Payoff: Sessions 3–5 make
+   decisions on data instead of guesses. Must ship before traffic, not after.*
+4. **Kill the cold start** (4) — `min_machines_running = 1` (~$3/mo).
+   *Payoff: first impression stops being a 6 s hang on "Loading pricing".*
+5. **Error monitoring** (7) — Sentry free tier, frontend + backend.
+   *Payoff: a broken record button on some Android browser surfaces as an
+   alert, not as silence. ~1 hour of work, compounds forever.*
+6. **Handwriting judge swap** (8) — config-line model change per HANDOVER.
+   *Payoff: write blocks stop failing honest beginners who then blame
+   themselves and churn. Gates every Hangul lesson today.*
+7. **3–4 new Talk scenarios matching existing Speak lessons** (9, 26) —
+   restaurant, directions/taxi, market/shopping, first meeting. Content is
+   an INSERT; the café prompt is the proven template. *Payoff: the marquee
+   feature goes from 5 minutes of value to an evening of value — the
+   clearest willingness-to-pay lever in the backlog.*
+8. **Conversion polish batch** (5-lite, 10, 11, 13) — goal-chip human
+   labels; hardcoded pricing fallback; hide "Get Premium" for founder-pass
+   holders; OG/Twitter tags + static robots.txt/sitemap.xml in
+   `frontend/public/`. *Payoff: shared links unfurl, the paywall page stops
+   looking broken, buyers aren't shown a dead button. Each is under an hour.*
+
+*Challenged and deliberately NOT immediate:* **landing page** — Session 1
+judged it strong; only OG tags ship now. **Retention mechanic** — with zero
+traffic there is nobody to retain yet; it leads Next Month instead, before
+any paid acquisition. **Social login** — real friction, but SMTP + Stripe
+matter more this sprint; it leads Next Month's funnel work.
+
+## Next Month — make it genuinely teach and retain
+
+The educational audit's verdict: strong Hangul pedagogy, then a cliff.
+These items close the honesty gap between "learn Korean" and what the app
+actually delivers — which is what converts a curious visitor into a
+subscriber rather than a one-weekend tourist.
+
+9. **Complete the Hangul course** (20) — 2 lessons (aspirated + tense
+   consonants; compound vowels) inserted before `read-and-say-it`, fixing
+   the untaught-letter bug (커피/김치/주세요). *Payoff: the course's core
+   promise — "you can read Korean" — becomes true.*
+10. **Review deck + streak + install nudge** (22, 17) — passed phrases
+    resurface on fixed 1/3/7-day intervals; visible streak; PWA install
+    prompt after first score. *Payoff: a Day-7 exists at all; a monthly
+    subscription needs a habit to bill against.*
+11. **Survival grammar + numbers micro-lessons** (24, 25) — sino-Korean
+    numbers/prices, 이에요/예요, 네/아니요, the NOUN + 주세요 pattern; one
+    intro explain block per Speak lesson. ~5 content INSERTs. *Payoff:
+    memorized strings become generative language; the learner can finally
+    understand the answer to 얼마예요?.*
+12. **Listening blocks** (23) — quiz payload variant with an audio prompt
+    (hear → choose meaning); "hide translation" toggle in Talk. *Payoff:
+    trains the one modality conversation actually requires; makes Talk a
+    listening exercise instead of a reading exercise.*
+13. **Google social login** (6) — *Payoff: lowest-friction path for a
+    mobile K-content audience, and every OAuth signup bypasses SMTP risk.*
+
+## Next Quarter — depth that justifies the subscription
+
+14. **Vocabulary to ~150–200 words** (21) — ~8–10 new Speak lessons themed
+    to existing/new scenarios. *Payoff: pushes the content wall from day 3
+    past week 4 — past the first monthly renewal.*
+15. **Scenario difficulty tiers** (9, 23) — ★★ variants of existing scenes:
+    romanization hidden, stricter goals, faster Minji. *Payoff: replay value
+    from the same content investment; a visible progression ladder.*
+16. **Landing prerender/SSG + route code splitting** (5, 15) — *Payoff:
+    organic acquisition capacity and mobile load times — worth doing once
+    analytics shows traffic to optimize.*
+17. **Auth component tests** (18) — alongside the social-login work, while
+    that code is open. *Payoff: regression net for the funnel's front door.*
+
+## Future — real, but not on the path to customer #1
+
+Phoneme-level pronunciation coaching (Azure streaming SDK) · raw-audio
+persistence for progress review · audio pre-generation into Storage ·
+N+1 lesson-query batching · richer gamification beyond a streak ·
+native-number lesson and other post-survival grammar · backfill of
+pre-migration test-account progress (16 — affects nobody real).
+
+## What we will NOT do, and why
+
+- **A full SRS engine (SM-2, ease factors, leech handling).** Fixed 1/3/7
+  intervals capture most of the retention value at ~5% of the complexity.
+  Revisit only if review-deck analytics show it's insufficient.
+- **CMS / admin UI for content.** Authoring is SQL INSERTs by one founder;
+  a CMS is building software for an employee we don't have.
+- **Hard lesson locking.** Design decision stands (frustration > discipline
+  for a beginner app); soft guidance only.
+- **Native iOS/Android apps.** The PWA installs and works; no evidence the
+  wrapper is what blocks a purchase. Enormous cost, zero proven payoff.
+- **More AI providers or model upgrades** beyond the one-line handwriting
+  judge swap. The current stack is verified live and paid for.
+- **Romanization profile toggle, leaderboards, community features.** No
+  plausible story connecting any of them to customer #1.
+- **Rebuilding the landing page.** Session 1 audited it as strong; touching
+  it burns the budget the scenarios need.
+- **Any Immediate-tier feature building beyond this list** — Sessions 3+
+  (v1.3 prompts) implement; this document is the contract for what.

@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 · **Branch:** `main` · **Status: DEPLOYED + AUDITED. App live at https://hanvoice.vercel.app, API at https://hanvoice-api.fly.dev, CI green. Full product/technical audit done (Session 1 of the 5-session revenue push) — findings live in `docs/BACKLOG.md`. Next: Stripe (BACKLOG item 1); next session prompt is `HanVoice_Fable5_Goal_Prompt_v1.2.xml`.**
+**Updated:** 2026-07-12 · **Branch:** `main` · **Status: DEPLOYED + AUDITED ×2. App live at https://hanvoice.vercel.app, API at https://hanvoice-api.fly.dev, CI green. Session 1 (product/tech audit) and Session 2 (educational audit + roadmap) of the 5-session revenue push are done — findings in `docs/BACKLOG.md` (items 1–26), execution order in `docs/ROADMAP.md`. Next: implement ROADMAP "Immediate" top-down, starting with Stripe; next session prompt is `HanVoice_Fable5_Goal_Prompt_v1.3.xml` (repeatable implementation session).**
 
 ## What exists
 
@@ -63,13 +63,28 @@ tab still works (canvas extracted to `HangulCanvas`).
 
 ## What's left
 
-**→ `docs/BACKLOG.md` is now the single prioritized backlog** (created by the
-2026-07-12 audit; severity-ordered, one line + impact each). Do not re-audit —
-append to it. The list below is kept only as original context for items the
-backlog references by number. Top of the backlog: **1) Stripe** (products/
-prices, 4 Fly secrets, webhook — billing 503s until then), **2) custom SMTP**
-(Supabase built-in is ~3 emails/hr and confirmation gates first use),
-**3) analytics** (none exists — PostHog/Plausible + funnel events).
+**→ `docs/ROADMAP.md` is the execution order; `docs/BACKLOG.md` is the full
+finding list** (Session 1 product/tech audit = items 1–19; Session 2
+educational audit = items 20–26 under the "Educational" heading). Do not
+re-audit either dimension — append to BACKLOG, reprioritize in ROADMAP.
+The ROADMAP "Immediate" tier (do top-down): Stripe → custom SMTP → PostHog
+analytics → `min_machines_running=1` → Sentry → handwriting judge swap →
+3–4 new Talk scenarios (café prompt is the template; content = INSERT) →
+conversion polish batch (goal-chip labels, pricing fallback, founder
+"Get Premium", OG tags + static robots/sitemap).
+
+Session 2 educational verdict worth keeping: Hangul course pedagogy is
+strong but teaches only 21 of 40 letters, and lesson 8 uses untaught ones
+(커피 ㅋㅍ, 김치 ㅊ, 주세요 ㅔ); money-talk teaches native numbers while the
+café scenario answers in sino-Korean; there is zero listening training and
+no retention mechanic (judged fatal for the learning mission, High for the
+first sale). Minimum viable curriculum is specified at the end of BACKLOG's
+Educational section — ~10 content INSERTs, 1 audio-quiz payload variant,
+1 simple 1/3/7-day review deck. Content design was specification-only this
+session; implementation belongs to v1.3 sessions.
+
+The list below is kept only as original context for items the backlog
+references by number.
 
 Audit facts worth keeping: API cold start measured 5.9 s (scale-to-zero);
 robots.txt/sitemap.xml are swallowed by the SPA rewrite (soft-404 HTML); no
