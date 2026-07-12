@@ -6,6 +6,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { Button, Card, ErrorNote, Spinner } from "../components/ui";
 import { useCheckout, useMe, usePlans } from "../hooks/queries";
+import { track } from "../lib/analytics";
 import { formatPrice } from "../lib/format";
 import type { Plan } from "../lib/types";
 
@@ -27,12 +28,17 @@ export function SubscriptionPage() {
   function planCta(plan: Plan) {
     if (plan.id === currentPlanId) return null;
     if (plan.id === "free") return null; // downgrades happen via Stripe, not here
-    if (plan.id === "founder" && me.data?.has_founder_pass) return null;
+    // A Founder Pass already covers Premium limits forever — showing either
+    // buy button would be inviting a double charge.
+    if (me.data?.has_founder_pass) return null;
     return (
       <Button
         className="w-full"
         disabled={checkout.isPending}
-        onClick={() => checkout.mutate(plan.id as "premium" | "founder")}
+        onClick={() => {
+          track("upgrade_clicked", { plan: plan.id });
+          checkout.mutate(plan.id as "premium" | "founder");
+        }}
       >
         {checkout.isPending ? "Opening checkout…" : `Get ${plan.name}`}
       </Button>
