@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 4) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 4 shipped both remaining big Immediate items.** (1) **Paddle billing rewrite DONE** (`f4bd0d9`): backend `/billing/checkout` serves Paddle.js overlay config, webhook verifies Paddle-Signature + grants entitlements with price-id cross-checks, frontend opens the overlay via `@paddle/paddle-js`; billing 503s by design until PADDLE_* env vars are set — **next founder action: Paddle sandbox setup (steps below); live products wait for Paddle approval (verification still in review)**. (2) **Talk scenarios DONE**: 5 published scenarios live (café + first-meeting, restaurant-lunch, taxi-to-hotel, market-shopping), goal patterns deployed to Fly, live-verified end-to-end. Remaining code work: ROADMAP item 8 (goal-chip labels, pricing fallback, OG tags + robots/sitemap — all URLs hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
+**Updated:** 2026-07-12 (session 4) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 4 shipped both remaining big Immediate items.** (1) **Paddle billing rewrite DONE** (`f4bd0d9`): backend `/billing/checkout` serves Paddle.js overlay config, webhook verifies Paddle-Signature + grants entitlements with price-id cross-checks, frontend opens the overlay via `@paddle/paddle-js`; billing 503s by design until PADDLE_* env vars are set — **sandbox E2E VERIFIED (session 4b): real overlay checkout on hanvoice.app → webhook → founder pass granted in live DB; production currently runs sandbox billing until go-live. Only remaining founder action: the go-live steps after Paddle approval (below).** (2) **Talk scenarios DONE**: 5 published scenarios live (café + first-meeting, restaurant-lunch, taxi-to-hotel, market-shopping), goal patterns deployed to Fly, live-verified end-to-end. Remaining code work: ROADMAP item 8 (goal-chip labels, pricing fallback, OG tags + robots/sitemap — all URLs hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
 
 ## What exists
 
@@ -93,36 +93,43 @@ Backend env (all in `backend/.env`, currently empty → 503):
 `PADDLE_ENV` (sandbox|production), `PADDLE_CLIENT_TOKEN`,
 `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_PREMIUM`, `PADDLE_PRICE_FOUNDER`.
 
-**Founder: sandbox test (can do NOW, no approval needed):**
-1. Create a sandbox account at https://sandbox-login.paddle.com/signup
-   (separate from the live account, instant, no verification).
-2. Paddle sandbox dashboard → **Catalog → Products → + New product**:
-   "HanVoice Founder Pass" → price: one-time, $69.00 USD. Then
-   "HanVoice Premium" → price: recurring monthly, $14.99 USD. Copy both
-   price IDs (`pri_…`).
-3. **Developer tools → Authentication → Client-side tokens → + New**: copy
-   the token (`test_…`).
-4. **Developer tools → Notifications → + New destination**: URL =
-   `https://hanvoice-api.fly.dev/api/billing/webhook` — for LOCAL testing
-   use a tunnel or the dashboard's simulator instead; events:
-   `transaction.completed`, `subscription.created`, `subscription.updated`,
-   `subscription.canceled` (add `subscription.paused`/`resumed` if offered).
-   Copy the **secret key** (`pdl_ntfset_…`).
-5. Fill the five `PADDLE_*` values in `backend/.env`
-   (`PADDLE_ENV=sandbox`), restart the backend, run the app locally
-   (verify skill), click **Get Founder Pass** → overlay opens → pay with
-   test card `4242 4242 4242 4242` (any future expiry/CVC). Webhook lands →
-   `/me` shows `has_founder_pass` (webhook must be reachable — use the
-   Notifications **simulator** against a tunnel, or test the overlay
-   client-side and fire simulated events for the grant path).
-6. Same for Premium with the other button.
+**Sandbox: DONE + E2E VERIFIED (2026-07-12, session 4b).** Sandbox account
+exists; products/prices created (founder `pri_01kxbnp67x33e1xc6n1hyz6xvm`
+$69 one-time, premium `pri_01kxbntzmq7eqfj89zx1da1ps7` $14.99/mo, both max
+quantity 1); client token + webhook secret minted. The five `PADDLE_*`
+sandbox values are in `backend/.env` AND set as Fly secrets
+(`PADDLE_ENV=sandbox` — production currently runs SANDBOX billing on
+purpose until go-live). Frontend with the overlay code deployed to Vercel
+(`index-vZDGK0Lh.js`). **Full loop verified with a real sandbox checkout:**
+overlay opened on hanvoice.app, test-card payment, webhook
+signature-verified, `founder_pass_purchases` row `id=2` written
+(`provider=paddle`, `txn_01kxbvwr44hrz9xeqdbay2ad1j`, 6900 cents), buy
+buttons hidden, founder-pass footer shown. Premium subscription checkout
+not yet click-tested (handler unit-tested; optional: repeat with a second
+fresh account).
 
-**Founder: go-live (ONLY after Paddle approval email):** repeat steps 2–4
-in the LIVE dashboard (live client token has no `test_` prefix), then:
-`flyctl secrets set PADDLE_ENV=production PADDLE_CLIENT_TOKEN=… PADDLE_WEBHOOK_SECRET=… PADDLE_PRICE_PREMIUM=… PADDLE_PRICE_FOUNDER=…`
-(from `backend/`; secrets set triggers a restart). The overlay checkout
-requires the domain to be approved — hanvoice.app is the domain under
-review, so this comes free with approval.
+Hard-won sandbox facts (apply to LIVE too):
+- Checkout FAILS with a generic "Something went wrong" overlay until BOTH
+  are set in the dashboard: **Checkout → Checkout settings → Default
+  payment link** (= `https://hanvoice.app/subscription`) AND the website
+  added under **Request website approval** (sandbox approves instantly).
+- The webhook **Secret key** is NOT the `ntfset_…` destination id shown in
+  the list — open the destination's ⋯ → Edit destination and copy the
+  `pdl_ntfset_…_…` value (contains `+`/`/` — quote it in shells).
+- Payment methods enabled in sandbox Checkout settings: PayPal, Apple Pay,
+  Google Pay, Bancontact + regionals — mirror this in live.
+
+**Founder: go-live (ONLY after Paddle approval email):** in the LIVE
+dashboard: create the two products/prices (same specs), client-side token
+(no `test_` prefix), notification destination →
+`https://hanvoice-api.fly.dev/api/billing/webhook` with
+`transaction.completed` + `subscription.created/updated/canceled/paused/resumed`,
+set the **default payment link** + payment methods (see facts above;
+domain approval comes with account approval). Then from `backend/`:
+`flyctl secrets set PADDLE_ENV=production PADDLE_CLIENT_TOKEN=… 'PADDLE_WEBHOOK_SECRET=…' PADDLE_PRICE_PREMIUM=… PADDLE_PRICE_FOUNDER=…`
+(quotes around the webhook secret — it contains `+`/`/`). Machine restarts
+itself. Verify with a real $69 self-purchase (money returns via Paddle
+payout) or a small live smoke + immediate refund via the Paddle dashboard.
 
 ## Founder account setup: COMPLETE (session 3b, 2026-07-12)
 

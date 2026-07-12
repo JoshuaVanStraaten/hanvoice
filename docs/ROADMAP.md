@@ -20,12 +20,14 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    — backend serves Paddle.js overlay config from `/billing/checkout`,
    webhook verifies Paddle-Signature and grants founder pass /
    subscription with price-id cross-checks; frontend opens the overlay
-   via `@paddle/paddle-js`. Billing 503s (by design) until PADDLE_* env
-   vars exist. **Remaining = founder actions:** create the sandbox
-   account + products, set PADDLE_* locally and sandbox-test; after
-   Paddle approves the live account (verification still in review),
-   create live products and set the four PADDLE_* Fly secrets +
-   `PADDLE_ENV=production`. Click-by-click in HANDOVER.md.
+   via `@paddle/paddle-js`. **Session 4b: sandbox E2E VERIFIED** — real
+   overlay checkout on hanvoice.app with a test card, webhook
+   signature-verified, founder pass granted in the live DB (row id 2).
+   Production currently runs sandbox billing (`PADDLE_ENV=sandbox` on
+   Fly) on purpose. **Only remaining step: go-live after Paddle approves
+   the account (still in review)** — live products + tokens + default
+   payment link, then swap the five Fly secrets. Click-by-click in
+   HANDOVER.md.
 2. **Custom SMTP** (2) — ✅ DONE (2026-07-12, session 3): Resend via
    joshuavanstraaten.com wired into Supabase auth, email rate limit
    raised to 30/hr, live-verified (reset mail delivered to inbox in
