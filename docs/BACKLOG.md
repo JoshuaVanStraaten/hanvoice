@@ -162,6 +162,24 @@ review deck + streak. Roughly: ~10 content INSERTs, 1 new quiz payload
 variant, 1 review mechanic. That is the whole gap between "Hangul app" and
 "conversation app".
 
+## GTM — Session 6 (2026-07-12): product changes the go-to-market plan needs
+
+Source: `docs/GTM.md` (beachhead = Korea-trip-booked beginner; channels =
+Reddit + TikTok). These two copy items are the *entire* build budget of the
+14-day first-customer play.
+
+27. **Landing copy → trip-prep positioning.** (High — it's the front door of
+    the whole play) Swap headline, subhead, and the 3 feature blurbs to the
+    exact copy in GTM.md §2 ("Speak Korean before you land in Seoul" /
+    scenario-rehearsal / scored-pronunciation / read-Hangul-in-a-weekend).
+    Copy edit only — layout, pricing section, and waitlist form untouched
+    (Session 1's "don't rebuild the landing page" verdict stands).
+28. **Waitlist offer → Seoul Survival Phrase Card.** (High) Change the
+    waitlist section copy to offer the free phrase-card PDF + founder-launch
+    discount (GTM.md §4). Delivery is manual via Resend at this scale — no
+    automation, no gating build. (Founder makes the PDF itself on Day 1 of
+    the play, from existing lesson phrases.)
+
 ## What's already good (don't fix what isn't broken)
 
 Marketing landing page exists and is strong (hero, demo phrase, 3 features,

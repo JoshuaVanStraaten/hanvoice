@@ -62,9 +62,19 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    fallback present in the live bundle).
    (13 — hide "Get Premium" for founder-pass holders — ✅ DONE 2026-07-12.)
 
-**→ Immediate is now EMPTY of code work.** Item 1's go-live founder steps
-wait on Paddle's approval email. Next session: promote Next Month items via
-v1.3, or start `HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market).
+18. **GTM landing copy swap** (27) — headline/subhead/proof points to the
+    trip-prep positioning in `docs/GTM.md` §2. Copy edit only; Day-0 task of
+    the 14-day first-customer play.
+19. **GTM waitlist offer swap** (28) — waitlist section offers the free
+    Seoul Survival Phrase Card + launch discount (`docs/GTM.md` §4).
+    Delivery manual via Resend; zero automation build.
+
+**→ Immediate after session 6 = items 18–19 (two copy edits from the GTM
+plan) + item 1's go-live founder steps, which wait on Paddle's approval
+email.** The 14-day first-customer play in `docs/GTM.md` §5 sequences the
+money-ask after that email (reservation fallback if it's late). Next
+session: `HanVoice_Fable5_Goal_Prompt_v1.5.xml` (content engine — executes
+Reddit + TikTok).
 
 *Challenged and deliberately NOT immediate:* **landing page** — Session 1
 judged it strong; only OG tags ship now. **Retention mechanic** — with zero

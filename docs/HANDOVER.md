@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 5) · **Branch:** `main` · **Status: DEPLOYED, ROADMAP Immediate is EMPTY of code work.** Session 5 shipped item 8, the conversion polish batch, deployed to Vercel and live-verified: (1) goal chips now show human labels — `goalLabel()` in `frontend/src/lib/goals.ts` maps all 15 backend goal keys (de-snake fallback for future keys), used in `TalkPage` + `ConversationPage`; (2) landing pricing renders instantly from `FALLBACK_PLANS` (mirrors the plans seed) and reconciles when the live `plans` fetch lands — spinner/error note removed; (3) OG/Twitter tags in `index.html`, static `robots.txt` + `sitemap.xml` in `frontend/public/` (no more SPA-rewrite soft-404s), all URLs https://hanvoice.app. Frontend: 42 tests, eslint + tsc clean. **Only open Immediate thread: Paddle go-live founder steps once the approval email arrives (see Paddle section — don't touch billing before that; `PADDLE_ENV=sandbox` in production is deliberate). Next session: `HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market), or promote Next Month items via v1.3.**
+**Updated:** 2026-07-12 (session 6) · **Branch:** `main` · **Status: DEPLOYED; GTM PLAN WRITTEN (`docs/GTM.md`), no code changes this session.** Session 6 (v1.4, strategy-only) produced the go-to-market plan: **beachhead = the Korea-trip-booked beginner** (the 5 live scenarios ARE trip prep; the content-wall/retention gaps don't break that use case); **channels = Reddit (primary) + TikTok (secondary)**, TikToks cross-posted to YT Shorts for free, everything else on the NOT list; landing messaging rewritten around "Speak Korean before you land in Seoul" (exact copy in GTM.md §2); and a **14-day first-customer play** (GTM.md §5) where days 1–11 are billing-free audience work and the $69 money-ask is gated on the Paddle approval email (reservation fallback if it's late). The plan's entire build budget is two copy edits, added as ROADMAP Immediate 18–19 / BACKLOG 27–28: landing copy swap + waitlist offer swap (Seoul Survival Phrase Card lead magnet). **Open Immediate threads: (a) ship items 18–19 — first concrete action: edit `frontend/src/pages/LandingPage.tsx` to the GTM.md §2 copy; (b) Paddle go-live founder steps once the approval email arrives (see Paddle section — `PADDLE_ENV=sandbox` in production is deliberate). Next session: `HanVoice_Fable5_Goal_Prompt_v1.5.xml` (content engine — executes Reddit + TikTok).**
 
 ## What exists
 
@@ -180,13 +180,14 @@ scenarios (ROADMAP items 1 and 7).**
 
 **→ `docs/ROADMAP.md` is the execution order; `docs/BACKLOG.md` is the full
 finding list** (Session 1 product/tech audit = items 1–19; Session 2
-educational audit = items 20–26 under the "Educational" heading). Do not
-re-audit either dimension — append to BACKLOG, reprioritize in ROADMAP.
-ROADMAP "Immediate" after session 5: ALL items done (2–8 + 13 shipped;
-item 1 Paddle is code-done + sandbox-verified, only the go-live founder
-steps remain, gated on Paddle's approval email). Next session uses
-`HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market) or promotes Next
-Month items via v1.3.
+educational audit = items 20–26; Session 6 GTM asks = items 27–28). Do not
+re-audit any dimension — append to BACKLOG, reprioritize in ROADMAP.
+**`docs/GTM.md` (session 6) is the marketing contract**: beachhead,
+messaging copy, Reddit+TikTok channel plan, 14-day play, NOT-do list —
+don't re-litigate channel choice, extend GTM.md instead. ROADMAP
+"Immediate" after session 6: items 18–19 (the two GTM copy edits) + item
+1's Paddle go-live steps (gated on the approval email). Next session:
+`HanVoice_Fable5_Goal_Prompt_v1.5.xml` (content engine).
 Analytics and Sentry are live-but-dormant: they activate when Joshua sets
 `VITE_POSTHOG_KEY` / `VITE_SENTRY_DSN` in Vercel (+ redeploy) and
 `SENTRY_DSN` as a Fly secret.
