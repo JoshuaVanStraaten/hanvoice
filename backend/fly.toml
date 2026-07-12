@@ -10,10 +10,11 @@ primary_region = "lhr"
 [http_service]
   internal_port = 8000
   force_https = true
-  # Pre-launch economics: scale to zero when idle, wake on request.
+  # One machine always warm (~$3/mo): the measured 5.9 s cold start was the
+  # first impression on nearly every pre-launch visit (BACKLOG item 4).
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
 
   [[http_service.checks]]
     method = "GET"
