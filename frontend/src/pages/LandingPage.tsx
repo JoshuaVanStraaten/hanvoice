@@ -1,7 +1,8 @@
 /** Public landing page. The hero stages the product's defining moment — a
  * Korean phrase said out loud and scored — using the real ScoreRing and the
- * signature speak ring. Pricing is read live from the public `plans` table;
- * the waitlist form captures visitors who aren't ready to sign up. */
+ * signature speak ring. Pricing renders from a hardcoded fallback immediately
+ * and reconciles against the public `plans` table when the fetch lands; the
+ * waitlist form captures visitors who aren't ready to sign up. */
 
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
@@ -9,13 +10,49 @@ import { Link } from "react-router-dom";
 import { useJoinWaitlist, usePlans } from "../hooks/queries";
 import { formatPrice } from "../lib/format";
 import type { Plan } from "../lib/types";
-import { Button, Card, ErrorNote, ScoreRing, Spinner } from "../components/ui";
+import { Button, Card, ScoreRing } from "../components/ui";
 
 const PLAN_PITCH: Record<string, string> = {
   free: "Enough daily practice to build the habit.",
   founder: "Every Premium limit, one payment, forever. Early-supporter pricing.",
   premium: "Practice as much as you can talk.",
 };
+
+/** Static mirror of the `plans` table (price-ascending, like usePlans) so
+ * pricing paints immediately on a cold visit; the live fetch reconciles any
+ * drift when it lands. Update alongside the plans seed if prices change. */
+const FALLBACK_PLANS: Plan[] = [
+  {
+    id: "free",
+    name: "Free",
+    price_usd_cents: 0,
+    billing_period: "none",
+    daily_pronunciation_limit: 20,
+    daily_conversation_turn_limit: 10,
+    daily_llm_token_limit: 20000,
+    daily_handwriting_limit: 10,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price_usd_cents: 1499,
+    billing_period: "monthly",
+    daily_pronunciation_limit: 200,
+    daily_conversation_turn_limit: 150,
+    daily_llm_token_limit: 300000,
+    daily_handwriting_limit: 100,
+  },
+  {
+    id: "founder",
+    name: "Lifetime Founder Pass",
+    price_usd_cents: 6900,
+    billing_period: "lifetime",
+    daily_pronunciation_limit: 200,
+    daily_conversation_turn_limit: 150,
+    daily_llm_token_limit: 300000,
+    daily_handwriting_limit: 100,
+  },
+];
 
 function PlanCard({ plan }: { plan: Plan }) {
   const featured = plan.id === "founder";
@@ -216,22 +253,18 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing — live from the plans table. */}
+        {/* Pricing — fallback paints instantly, live plans table reconciles.
+            No spinner, no error state: a marketing page never says "loading
+            pricing" or shows a fetch error for three static tiers. */}
         <section id="pricing" aria-labelledby="pricing-heading" className="space-y-4">
           <h2 id="pricing-heading" className="text-center text-2xl font-bold">
             Pricing
           </h2>
-          {plans.isPending && <Spinner label="Loading pricing" />}
-          {plans.isError && (
-            <ErrorNote error={plans.error} retry={() => void plans.refetch()} />
-          )}
-          {plans.isSuccess && (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {plans.data.map((plan) => (
-                <PlanCard key={plan.id} plan={plan} />
-              ))}
-            </div>
-          )}
+          <div className="grid gap-4 sm:grid-cols-3">
+            {(plans.data ?? FALLBACK_PLANS).map((plan) => (
+              <PlanCard key={plan.id} plan={plan} />
+            ))}
+          </div>
         </section>
 
         {/* Waitlist */}

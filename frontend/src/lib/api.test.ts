@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, apiGet } from "./api";
-import { allGoalsDone, goalStates } from "./goals";
+import { allGoalsDone, goalLabel, goalStates } from "./goals";
 import { formatPrice } from "./format";
 import type { Plan } from "./types";
 
@@ -78,6 +78,18 @@ describe("goal chips", () => {
   it("ignores completed goals that aren't in the scenario", () => {
     const states = goalStates(goals, ["something else"]);
     expect(states.every((state) => !state.done)).toBe(true);
+  });
+});
+
+describe("goalLabel", () => {
+  it("maps every backend goal key to a human label", () => {
+    expect(goalLabel("ordered_drink")).toBe("Ordered a drink");
+    expect(goalLabel("stated_destination")).toBe("Told the driver your destination");
+    expect(goalLabel("said_nice_to_meet")).toBe("Said nice to meet you");
+  });
+
+  it("humanizes unknown keys instead of showing raw snake_case", () => {
+    expect(goalLabel("booked_a_table")).toBe("Booked a table");
   });
 });
 

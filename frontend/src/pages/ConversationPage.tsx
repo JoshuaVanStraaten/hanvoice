@@ -12,7 +12,7 @@ import { useActivityInvalidation, useScenarios } from "../hooks/queries";
 import { useRecorder } from "../hooks/useRecorder";
 import { apiGet, apiPost, apiPostForm } from "../lib/api";
 import { extensionFor } from "../lib/audio";
-import { allGoalsDone, goalStates } from "../lib/goals";
+import { allGoalsDone, goalLabel, goalStates } from "../lib/goals";
 import type {
   ConversationDetail,
   ConversationMessage,
@@ -203,7 +203,7 @@ export function ConversationPage() {
               }`}
             >
               {state.done ? "✓ " : ""}
-              {state.goal}
+              {goalLabel(state.goal)}
             </span>
           ))}
         </div>

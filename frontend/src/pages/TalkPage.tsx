@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Button, Card, ErrorNote, Spinner } from "../components/ui";
 import { useScenarios } from "../hooks/queries";
 import { apiPost } from "../lib/api";
+import { goalLabel } from "../lib/goals";
 import type { StartConversationResponse } from "../lib/types";
 
 export function TalkPage() {
@@ -60,7 +61,7 @@ export function TalkPage() {
                 <p className="text-sm text-ink-soft">{scenario.description}</p>
                 <ul className="space-y-1 text-sm text-ink-soft">
                   {scenario.completion_goals.map((goal) => (
-                    <li key={goal}>· {goal}</li>
+                    <li key={goal}>· {goalLabel(goal)}</li>
                   ))}
                 </ul>
                 <Button
