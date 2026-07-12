@@ -15,9 +15,15 @@ longer than one sentence, the item went to Future or the NOT list.
 Revenue is structurally impossible and the front door leaks; fix both, then
 make the marquee feature worth paying for. Nothing else jumps this queue.
 
-1. **Stripe activation** (1) — ⏸ FOUNDER ACTION (2026-07-12, session 3):
-   code was already complete; click-by-click dashboard instructions
-   delivered (products/prices, 4 Fly secrets, webhook). Blocked on Joshua.
+1. **Billing activation — now Paddle, not Stripe** (1) — ⟳ REPLANNED
+   (2026-07-12, session 3): Stripe does not accept South African
+   businesses (extended-network-via-Paystack only — verified on
+   stripe.com/global). Decision: Paddle (merchant of record, SA sellers
+   supported, handles global VAT; see _os/DECISIONS.md). Joshua: create
+   live + sandbox Paddle accounts (instructions delivered). Code (next
+   session): rewrite `backend/app/services/billing.py` + webhook for
+   Paddle Billing, swap frontend checkout, add terms/privacy/refund
+   pages (Paddle website review requires them), then create products.
 2. **Custom SMTP** (2) — ⏸ FOUNDER ACTION (2026-07-12, session 3): Resend
    setup instructions delivered (domain verify, SMTP creds into Supabase).
    Blocked on Joshua.
@@ -38,7 +44,9 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    restaurant, directions/taxi, market/shopping, first meeting. Content is
    an INSERT; the café prompt is the proven template. *Payoff: the marquee
    feature goes from 5 minutes of value to an evening of value — the
-   clearest willingness-to-pay lever in the backlog.* **← NEXT**
+   clearest willingness-to-pay lever in the backlog.* **← NEXT, alongside
+   the Paddle rewrite (item 1): revenue plumbing outranks it if only one
+   fits the session.**
 8. **Conversion polish batch** (5-lite, 10, 11) — goal-chip human
    labels; hardcoded pricing fallback; OG/Twitter tags + static
    robots.txt/sitemap.xml in `frontend/public/`. *Payoff: shared links
