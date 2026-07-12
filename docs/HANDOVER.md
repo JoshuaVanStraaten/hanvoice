@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 · **Branch:** `main` · **Status: DEPLOYED + AUDITED ×2. App live at https://hanvoice.vercel.app, API at https://hanvoice-api.fly.dev, CI green. Session 1 (product/tech audit) and Session 2 (educational audit + roadmap) of the 5-session revenue push are done — findings in `docs/BACKLOG.md` (items 1–26), execution order in `docs/ROADMAP.md`. Next: implement ROADMAP "Immediate" top-down, starting with Stripe; next session prompt is `HanVoice_Fable5_Goal_Prompt_v1.3.xml` (repeatable implementation session).**
+**Updated:** 2026-07-12 (session 3) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 3 (first v1.3 implementation session) shipped 5 of 8 ROADMAP Immediate items: PostHog funnel analytics (env-gated, awaiting key), Sentry both stacks (env-gated, awaiting DSNs), warm Fly machine (cold start 5.9 s → 0.54 s, verified), handwriting judge swapped to `meta/llama-3.2-90b-vision-instruct` (verified live: honest ㅏ scores 70, was 0), founder-pass buy-button fix. Stripe + SMTP are code-complete and blocked on founder dashboard actions — click-by-click instructions were delivered in the session-3 chat and are mirrored in ROADMAP items 1–2. Next code work: ROADMAP Immediate item 7 (3–4 Talk scenarios, content INSERTs) then item 8 (polish remainder). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml` while Immediate items remain.**
 
 ## What exists
 
@@ -67,11 +67,14 @@ tab still works (canvas extracted to `HangulCanvas`).
 finding list** (Session 1 product/tech audit = items 1–19; Session 2
 educational audit = items 20–26 under the "Educational" heading). Do not
 re-audit either dimension — append to BACKLOG, reprioritize in ROADMAP.
-The ROADMAP "Immediate" tier (do top-down): Stripe → custom SMTP → PostHog
-analytics → `min_machines_running=1` → Sentry → handwriting judge swap →
-3–4 new Talk scenarios (café prompt is the template; content = INSERT) →
-conversion polish batch (goal-chip labels, pricing fallback, founder
-"Get Premium", OG tags + static robots/sitemap).
+ROADMAP "Immediate" after session 3: items 3–6 + 13 are DONE (see per-item
+annotations); items 1–2 (Stripe, SMTP) are FOUNDER ACTIONS with
+instructions delivered; remaining code work is item 7 (3–4 Talk scenarios —
+café prompt is the template, content = INSERT) then item 8 (goal-chip
+labels, pricing fallback, OG tags + static robots/sitemap).
+Analytics and Sentry are live-but-dormant: they activate when Joshua sets
+`VITE_POSTHOG_KEY` / `VITE_SENTRY_DSN` in Vercel (+ redeploy) and
+`SENTRY_DSN` as a Fly secret.
 
 Session 2 educational verdict worth keeping: Hangul course pedagogy is
 strong but teaches only 21 of 40 letters, and lesson 8 uses untaught ones
@@ -109,9 +112,8 @@ verified working live on a 390×844 viewport, console clean.
    migration (café essentials) have a completed `lesson_progress` rollup but no
    `lesson_block_progress` rows, so the player starts them at step 1 unpassed.
    Real users all start post-migration; backfill or ignore.
-5. **v2 quality items** — stronger handwriting judge (8B Nemotron-VL is coarse;
-   scores synthetic/mouse drawings near zero — one config line to swap; matters
-   more now that write blocks gate lesson progress), phoneme-level pronunciation
+5. **v2 quality items** — ~~stronger handwriting judge~~ (done session 3:
+   `meta/llama-3.2-90b-vision-instruct`), phoneme-level pronunciation
    coaching (needs Azure streaming SDK instead of REST), streaks/gamification,
    romanization toggle as a profile setting, raw-audio persistence for progress
    review (consent + storage), `/api/progress` + `/api/lessons` do N+1 block
@@ -150,8 +152,12 @@ frontend tests green):
 - **Supabase signs ES256 now:** legacy HS256 secret verifies nothing; backend
   fetches JWKS (`core/security.py`, `199855f`). HS256 kept for tests.
 - **NVIDIA's REST API has no speech models** — ASR/TTS are gRPC/Riva only. That's
-  why speech is all-Azure (`1005ff4`, `3e5a14f`). Vision model id must be
-  `nvidia/llama-3.1-nemotron-nano-vl-8b-v1` (check `/v1/models` first).
+  why speech is all-Azure (`1005ff4`, `3e5a14f`). Vision judge is
+  `meta/llama-3.2-90b-vision-instruct` since session 3 (config default, no
+  Fly secret override) — benchmarked against nemotron-nano-vl-8b (zeros
+  honest attempts), nemotron-nano-12b-v2-vl and qwen3.5 122b/397b (can't
+  separate real writing from scribble). Check `/v1/models` before trying
+  another id.
 - **Azure short-audio API:** needs `format=detailed` query param; returns scores
   flat on `NBest[0]` (parser accepts both shapes, `5d69701`). Only accepts
   WAV/OGG — browser recordings are converted to 16kHz WAV client-side
@@ -184,5 +190,16 @@ frontend tests green):
   bundle keeps running until the SW updates in the background + next reload.
   When verifying a fresh deploy, unregister the SW / clear CacheStorage first,
   or you'll debug the previous build.
+- **Vercel is NOT git-connected** — pushing to GitHub deploys nothing. Deploy
+  the frontend with `vercel deploy --prod` from `frontend/` (project is linked
+  via `frontend/.vercel/`). Fly deploys via `flyctl deploy --remote-only` from
+  `backend/`.
+- **Analytics/Sentry are env-gated AND dead-code-eliminated:** with
+  `VITE_POSTHOG_KEY` empty at build, Rollup strips posthog-js from the bundle
+  entirely (`grep posthog dist/assets/*.js` finds nothing — that's expected,
+  not a bug). Setting the key requires a Vercel redeploy to take effect, same
+  as every `VITE_*` var. Funnel event names: signup_submitted, signed_in,
+  lesson_started, attempt_scored, upgrade_clicked, waitlist_joined
+  (`frontend/src/lib/analytics.ts`).
 - Local dev drive recipe (servers, test login, deterministic speak-block pass
   via Azure TTS WAV): `.claude/skills/verify/SKILL.md`.

@@ -15,31 +15,35 @@ longer than one sentence, the item went to Future or the NOT list.
 Revenue is structurally impossible and the front door leaks; fix both, then
 make the marquee feature worth paying for. Nothing else jumps this queue.
 
-1. **Stripe activation** (1) — products/prices ($69 founder, $14.99/mo),
-   4 Fly secrets, webhook. *Payoff: revenue goes from impossible to possible.*
-2. **Custom SMTP** (2) — Resend/Postmark for Supabase auth mail.
-   *Payoff: the 4th signup in an hour stops being silently lost at the door.*
-3. **Analytics + funnel events** (3) — PostHog; landing → signup → confirmed
-   → first lesson → first score → upgrade click. *Payoff: Sessions 3–5 make
-   decisions on data instead of guesses. Must ship before traffic, not after.*
-4. **Kill the cold start** (4) — `min_machines_running = 1` (~$3/mo).
-   *Payoff: first impression stops being a 6 s hang on "Loading pricing".*
-5. **Error monitoring** (7) — Sentry free tier, frontend + backend.
-   *Payoff: a broken record button on some Android browser surfaces as an
-   alert, not as silence. ~1 hour of work, compounds forever.*
-6. **Handwriting judge swap** (8) — config-line model change per HANDOVER.
-   *Payoff: write blocks stop failing honest beginners who then blame
-   themselves and churn. Gates every Hangul lesson today.*
+1. **Stripe activation** (1) — ⏸ FOUNDER ACTION (2026-07-12, session 3):
+   code was already complete; click-by-click dashboard instructions
+   delivered (products/prices, 4 Fly secrets, webhook). Blocked on Joshua.
+2. **Custom SMTP** (2) — ⏸ FOUNDER ACTION (2026-07-12, session 3): Resend
+   setup instructions delivered (domain verify, SMTP creds into Supabase).
+   Blocked on Joshua.
+3. **Analytics + funnel events** (3) — ✅ CODE SHIPPED (2026-07-12,
+   session 3): PostHog EU, env-gated, full funnel events live in the
+   bundle. Activates when Joshua sets `VITE_POSTHOG_KEY` in Vercel and
+   redeploys (instructions delivered).
+4. **Kill the cold start** (4) — ✅ DONE (2026-07-12, session 3):
+   `min_machines_running = 1` deployed; warm `/api/health` measured 0.54 s
+   (was 5.9 s cold).
+5. **Error monitoring** (7) — ✅ CODE SHIPPED (2026-07-12, session 3):
+   Sentry env-gated on both stacks; activates when Joshua sets the two
+   DSNs (instructions delivered).
+6. **Handwriting judge swap** (8) — ✅ DONE (2026-07-12, session 3):
+   `meta/llama-3.2-90b-vision-instruct`, benchmarked against 4 rivals,
+   verified live (honest ㅏ now scores 70; old judge gave 0).
 7. **3–4 new Talk scenarios matching existing Speak lessons** (9, 26) —
    restaurant, directions/taxi, market/shopping, first meeting. Content is
    an INSERT; the café prompt is the proven template. *Payoff: the marquee
    feature goes from 5 minutes of value to an evening of value — the
-   clearest willingness-to-pay lever in the backlog.*
-8. **Conversion polish batch** (5-lite, 10, 11, 13) — goal-chip human
-   labels; hardcoded pricing fallback; hide "Get Premium" for founder-pass
-   holders; OG/Twitter tags + static robots.txt/sitemap.xml in
-   `frontend/public/`. *Payoff: shared links unfurl, the paywall page stops
-   looking broken, buyers aren't shown a dead button. Each is under an hour.*
+   clearest willingness-to-pay lever in the backlog.* **← NEXT**
+8. **Conversion polish batch** (5-lite, 10, 11) — goal-chip human
+   labels; hardcoded pricing fallback; OG/Twitter tags + static
+   robots.txt/sitemap.xml in `frontend/public/`. *Payoff: shared links
+   unfurl, the paywall page stops looking broken. Each is under an hour.*
+   (13 — hide "Get Premium" for founder-pass holders — ✅ DONE 2026-07-12.)
 
 *Challenged and deliberately NOT immediate:* **landing page** — Session 1
 judged it strong; only OG tags ship now. **Retention mechanic** — with zero

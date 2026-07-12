@@ -19,20 +19,17 @@ Each item: **what · where · impact**. Severity = distance from revenue.
    ~3 emails/hour. The 4th signup in any hour never gets the email and is lost
    at the door. Configure custom SMTP (Resend/Postmark) before driving any
    traffic. (HANDOVER item 2.)
-3. **Zero analytics.** No GA/PostHog/Plausible, no events, nothing in the
-   bundle or code (verified by grep + network log). Can't see visits, funnel
-   drop-off, activation, or retention — every later session's decisions would
-   be guesses. Add a privacy-light tool (PostHog or Plausible) + a handful of
-   funnel events (landing → signup → confirmed → first lesson → first score →
-   upgrade click).
+3. ✅ **DONE 2026-07-12 (code), pending founder key.** PostHog EU wired
+   env-gated (`frontend/src/lib/analytics.ts`): pageviews + signup_submitted,
+   signed_in, lesson_started, attempt_scored, upgrade_clicked,
+   waitlist_joined, identify/reset. No-op until `VITE_POSTHOG_KEY` is set in
+   Vercel + redeploy. ~~Zero analytics.~~
 
 ## High — actively bleeds conversion or retention
 
-4. **~6 s API cold start on nearly every visit.** Fly scale-to-zero; measured
-   5.9 s on `/api/health`. At pre-launch traffic *every* visit is cold: the
-   landing pricing section sits on "Loading pricing", first login and first
-   audio hang. Cheapest fix: `min_machines_running = 1` (~$2–3/mo); or a
-   scheduled keep-warm ping.
+4. ✅ **DONE 2026-07-12.** `min_machines_running = 1` deployed; warm
+   `/api/health` measured 0.54 s. ~~~6 s API cold start on nearly every
+   visit.~~
 5. **No SEO surface at all.** SPA ships an empty `<div id="root">` to
    crawlers; `robots.txt` and `sitemap.xml` are swallowed by the SPA rewrite
    and return the HTML shell (soft-404s, verified); no Open Graph/Twitter
@@ -43,16 +40,16 @@ Each item: **what · where · impact**. Severity = distance from revenue.
 6. **No social login.** Email+password+confirmation is the highest-friction
    path for a mobile K-pop/K-drama audience — and Google/Apple OAuth
    (Supabase supports both) also sidesteps the SMTP bottleneck in item 2.
-7. **No error monitoring.** No Sentry or equivalent; production errors are
-   invisible. A broken record button on some Android browser would be
-   discovered only by silence. Pairs with item 3.
-8. **Handwriting judge fails honest attempts — and write blocks gate
-   lessons.** Nemotron-VL-8B scores thin/synthetic strokes near zero (known,
-   HANDOVER gotcha); write blocks require ≥60 to pass. A beginner writing ㅏ
-   with a finger, decently, and failing repeatedly concludes *they* are bad
-   and churns. Config-line model swap per HANDOVER; alternatively lower the
-   gate or make write blocks skippable-but-tracked. Was "v2 quality"; it's a
-   retention item now that writing gates progress.
+7. ✅ **DONE 2026-07-12 (code), pending founder DSNs.** Sentry env-gated on
+   both stacks (`frontend/src/lib/monitoring.ts`, `backend/app/main.py`),
+   errors-only. No-op until `VITE_SENTRY_DSN` (Vercel + redeploy) and
+   `SENTRY_DSN` (Fly secret) are set. ~~No error monitoring.~~
+8. ✅ **DONE 2026-07-12.** Judge swapped to
+   `meta/llama-3.2-90b-vision-instruct` after benchmarking 5 NVIDIA-hosted
+   vision models with the production prompt on canvas-like strokes — the
+   only one passing honest jamo (70) while failing a scribble control
+   (55 < 60 gate). Verified live: the ㅏ the old judge zeroed now scores 70.
+   ~~Handwriting judge fails honest attempts.~~
 9. **Talk has one scenario.** The marquee feature (only "Order an iced
    Americano", ★ difficulty) is exhausted in ~5 minutes. Nobody pays $69
    lifetime for one café chat; scenario depth is the clearest willingness-to-
@@ -70,8 +67,9 @@ Each item: **what · where · impact**. Severity = distance from revenue.
     hardcoded fallback that reconciles when the fetch lands.
 12. **"Native language" is a free-text field containing `en`.** /settings.
     Confusing to a real user; make it a small select (en/es/ja/zh/…).
-13. **Founder-pass holders still see "Get Premium".** /subscription. Clicking
-    it would double-charge intent; hide or disable when current plan covers it.
+13. ✅ **DONE 2026-07-12.** Buy buttons hidden for founder-pass holders
+    (`SubscriptionPage.planCta`). ~~Founder-pass holders still see "Get
+    Premium".~~
 14. **Progress says "No conversations yet" after you've talked to Minji.**
     Only *ended* sessions count, and nothing nudges you to end one. Count
     sessions with ≥1 turn, or add a clear "End conversation" affordance.
