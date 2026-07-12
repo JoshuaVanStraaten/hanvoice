@@ -244,11 +244,22 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-line py-6 text-center text-xs text-ink-soft">
+      <footer className="space-y-2 border-t border-line py-6 text-center text-xs text-ink-soft">
         <p lang="ko" className="hangul-display mb-1 text-sm text-ink">
           오늘도 화이팅!
         </p>
         <p>HanVoice · Speak Korean out loud.</p>
+        <nav className="flex justify-center gap-4">
+          <Link to="/terms" className="hover:text-taegeuk-blue">
+            Terms
+          </Link>
+          <Link to="/privacy" className="hover:text-taegeuk-blue">
+            Privacy
+          </Link>
+          <Link to="/refunds" className="hover:text-taegeuk-blue">
+            Refunds
+          </Link>
+        </nav>
       </footer>
     </div>
   );

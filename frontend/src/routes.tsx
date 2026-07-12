@@ -9,6 +9,9 @@ import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { PasswordResetPage } from "./pages/PasswordResetPage";
+import { TermsPage } from "./pages/TermsPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { RefundsPage } from "./pages/RefundsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LessonsPage } from "./pages/LessonsPage";
 import { LessonDetailPage } from "./pages/LessonDetailPage";
@@ -25,6 +28,9 @@ export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/reset-password", element: <PasswordResetPage /> },
+  { path: "/terms", element: <TermsPage /> },
+  { path: "/privacy", element: <PrivacyPage /> },
+  { path: "/refunds", element: <RefundsPage /> },
   {
     element: <App />,
     children: [
