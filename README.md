@@ -6,7 +6,7 @@ barista (Azure STT → Llama → Azure TTS), and Hangul handwriting checks (Nemo
 Free tier, $69 lifetime Founder Pass, or $14.99/mo Premium — enforced by daily quotas.
 
 **Stack:** React 19 / TypeScript / Tailwind v4 / Vite PWA · FastAPI / Python 3.12 ·
-Supabase (Postgres + Auth) · Stripe.
+Supabase (Postgres + Auth) · Paddle.
 
 ## Quickstart
 

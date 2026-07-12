@@ -1,7 +1,7 @@
 """Reads/writes for subscriptions and founder passes.
 
-Rows here are written only from Stripe webhook handling — never from
-user-initiated requests directly.
+Rows here are written only from verified payment-provider webhook handling —
+never from user-initiated requests directly.
 """
 
 from typing import Any
@@ -35,6 +35,7 @@ async def record_founder_pass(
         "founder_pass_purchases",
         {
             "user_id": str(user_id),
+            "provider": "paddle",
             "provider_payment_id": provider_payment_id,
             "amount_usd_cents": amount_usd_cents,
         },

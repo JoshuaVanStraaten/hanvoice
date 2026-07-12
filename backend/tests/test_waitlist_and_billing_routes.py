@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import time
+from typing import Any
 
 import httpx
 import pytest
@@ -14,7 +15,9 @@ from app.services.billing import BillingService
 from tests.conftest import SUPABASE_REST
 from tests.factories import TEST_USER_ID, auth_headers
 
-WEBHOOK_SECRET = "whsec_testsecret"
+WEBHOOK_SECRET = "pdl_ntfset_testsecret"
+PRICE_FOUNDER = "pri_founder_test"
+PRICE_PREMIUM = "pri_premium_test"
 
 
 # --- Waitlist -----------------------------------------------------------------
@@ -60,7 +63,7 @@ def test_waitlist_rate_limited_eventually(client):
     assert 429 in statuses
 
 
-# --- Billing --------------------------------------------------------------------
+# --- Billing (Paddle) -----------------------------------------------------------
 
 
 def test_checkout_unconfigured_is_503(client):
@@ -81,52 +84,101 @@ def configured_service() -> BillingService:
             supabase_url="http://supabase.test",
             supabase_service_role_key="k",
             supabase_jwt_secret="s",
-            stripe_secret_key="sk_test_x",
-            stripe_webhook_secret=WEBHOOK_SECRET,
+            paddle_env="sandbox",
+            paddle_client_token="test_client_token",
+            paddle_webhook_secret=WEBHOOK_SECRET,
+            paddle_price_founder=PRICE_FOUNDER,
+            paddle_price_premium=PRICE_PREMIUM,
         )
     )
 
 
-def sign(payload: bytes) -> str:
-    timestamp = int(time.time())
-    signature = hmac.new(
-        WEBHOOK_SECRET.encode(), f"{timestamp}.{payload.decode()}".encode(), hashlib.sha256
+def sign(payload: bytes, timestamp: int | None = None) -> str:
+    ts = int(time.time()) if timestamp is None else timestamp
+    digest = hmac.new(
+        WEBHOOK_SECRET.encode(), f"{ts}:{payload.decode()}".encode(), hashlib.sha256
     ).hexdigest()
-    return f"t={timestamp},v1={signature}"
+    return f"ts={ts};h1={digest}"
 
 
-def founder_checkout_event() -> bytes:
+def paddle_event(event_type: str, data: dict[str, Any]) -> bytes:
     return json.dumps(
         {
-            "id": "evt_1",
-            "object": "event",
-            "api_version": "2024-06-20",
-            "type": "checkout.session.completed",
-            "data": {
-                "object": {
-                    "id": "cs_1",
-                    "object": "checkout.session",
-                    "mode": "payment",
-                    "client_reference_id": TEST_USER_ID,
-                    "payment_intent": "pi_123",
-                    "amount_total": 6900,
-                    "metadata": {"plan": "founder", "user_id": TEST_USER_ID},
-                }
-            },
+            "event_id": "evt_01hv8x2k9tq3",
+            "event_type": event_type,
+            "occurred_at": "2026-07-12T10:00:00.000000Z",
+            "notification_id": "ntf_01hv8x2kabc",
+            "data": data,
         }
     ).encode()
+
+
+def founder_transaction(price_id: str = PRICE_FOUNDER) -> bytes:
+    return paddle_event(
+        "transaction.completed",
+        {
+            "id": "txn_01hv8xfounder",
+            "status": "completed",
+            "custom_data": {"user_id": TEST_USER_ID, "plan": "founder"},
+            "items": [{"price": {"id": price_id}, "quantity": 1}],
+            "details": {"totals": {"total": "6900", "currency_code": "USD"}},
+            "subscription_id": None,
+        },
+    )
+
+
+def premium_subscription(
+    status: str = "active", scheduled_change: dict[str, Any] | None = None
+) -> bytes:
+    return paddle_event(
+        "subscription.updated",
+        {
+            "id": "sub_01hv8xpremium",
+            "status": status,
+            "customer_id": "ctm_01hv8x9",
+            "custom_data": {"user_id": TEST_USER_ID, "plan": "premium"},
+            "items": [{"price": {"id": PRICE_PREMIUM}, "quantity": 1}],
+            "current_billing_period": {
+                "starts_at": "2026-07-12T10:00:00Z",
+                "ends_at": "2026-08-12T10:00:00Z",
+            },
+            "scheduled_change": scheduled_change,
+        },
+    )
+
+
+def test_checkout_config_serves_paddle_overlay_settings():
+    service = configured_service()
+    from uuid import UUID
+
+    config = service.checkout_config(
+        UUID(TEST_USER_ID), "learner@example.com", "founder"
+    )
+    assert config.environment == "sandbox"
+    assert config.client_token == "test_client_token"
+    assert config.price_id == PRICE_FOUNDER
+    assert config.custom_data == {"user_id": TEST_USER_ID, "plan": "founder"}
+    assert config.email == "learner@example.com"
 
 
 def test_webhook_rejects_bad_signature():
     service = configured_service()
     with pytest.raises(BadRequestError):
-        service.verify_webhook(founder_checkout_event(), "t=1,v1=deadbeef")
+        service.verify_webhook(founder_transaction(), "ts=1;h1=deadbeef")
+
+
+def test_webhook_rejects_stale_timestamp():
+    service = configured_service()
+    payload = founder_transaction()
+    stale = int(time.time()) - 3600
+    with pytest.raises(BadRequestError):
+        service.verify_webhook(payload, sign(payload, timestamp=stale))
 
 
 @respx.mock
-async def test_founder_checkout_records_pass():
+async def test_founder_transaction_records_pass():
     service = configured_service()
-    payload = founder_checkout_event()
+    payload = founder_transaction()
     event = service.verify_webhook(payload, sign(payload))
 
     insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
@@ -138,13 +190,15 @@ async def test_founder_checkout_records_pass():
 
     sent = json.loads(insert.calls[0].request.content)
     assert sent["user_id"] == TEST_USER_ID
-    assert sent["provider_payment_id"] == "pi_123"
+    assert sent["provider_payment_id"] == "txn_01hv8xfounder"
+    assert sent["provider"] == "paddle"
+    assert sent["amount_usd_cents"] == 6900
 
 
 @respx.mock
 async def test_founder_webhook_retry_is_idempotent():
     service = configured_service()
-    payload = founder_checkout_event()
+    payload = founder_transaction()
     event = service.verify_webhook(payload, sign(payload))
 
     respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
@@ -156,28 +210,53 @@ async def test_founder_webhook_retry_is_idempotent():
 
 
 @respx.mock
+async def test_founder_grant_requires_matching_price():
+    # custom_data comes from the client-opened checkout; a tampered plan label
+    # must not grant a founder pass for a premium-priced purchase.
+    service = configured_service()
+    payload = founder_transaction(price_id=PRICE_PREMIUM)
+    event = service.verify_webhook(payload, sign(payload))
+
+    insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    async with httpx.AsyncClient() as http:
+        db = Database(http=http, base_url="http://supabase.test", service_role_key="k")
+        await service.handle_event(db, event)
+
+    assert not insert.called
+
+
+@respx.mock
+async def test_subscription_transaction_is_left_to_subscription_events():
+    service = configured_service()
+    payload = paddle_event(
+        "transaction.completed",
+        {
+            "id": "txn_01hv8xsubpay",
+            "status": "completed",
+            "custom_data": {"user_id": TEST_USER_ID, "plan": "premium"},
+            "items": [{"price": {"id": PRICE_PREMIUM}, "quantity": 1}],
+            "details": {"totals": {"total": "1499", "currency_code": "USD"}},
+            "subscription_id": "sub_01hv8xpremium",
+        },
+    )
+    event = service.verify_webhook(payload, sign(payload))
+
+    insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    async with httpx.AsyncClient() as http:
+        db = Database(http=http, base_url="http://supabase.test", service_role_key="k")
+        await service.handle_event(db, event)
+
+    assert not insert.called
+
+
+@respx.mock
 async def test_subscription_update_upserts_row():
     service = configured_service()
-    payload = json.dumps(
-        {
-            "id": "evt_2",
-            "object": "event",
-            "api_version": "2024-06-20",
-            "type": "customer.subscription.updated",
-            "data": {
-                "object": {
-                    "id": "sub_123",
-                    "object": "subscription",
-                    "status": "active",
-                    "customer": "cus_9",
-                    "cancel_at_period_end": False,
-                    "current_period_start": 1780000000,
-                    "current_period_end": 1782600000,
-                    "metadata": {"user_id": TEST_USER_ID},
-                }
-            },
-        }
-    ).encode()
+    payload = premium_subscription()
     event = service.verify_webhook(payload, sign(payload))
 
     upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
@@ -188,6 +267,49 @@ async def test_subscription_update_upserts_row():
         await service.handle_event(db, event)
 
     sent = json.loads(upsert.calls[0].request.content)
-    assert sent["provider_subscription_id"] == "sub_123"
+    assert sent["provider_subscription_id"] == "sub_01hv8xpremium"
+    assert sent["provider"] == "paddle"
     assert sent["status"] == "active"
     assert sent["plan_id"] == "premium"
+    assert sent["user_id"] == TEST_USER_ID
+    assert sent["cancel_at_period_end"] is False
+    assert sent["current_period_end"] == "2026-08-12T10:00:00Z"
+
+
+@respx.mock
+async def test_subscription_scheduled_cancel_sets_period_end_flag():
+    service = configured_service()
+    payload = premium_subscription(
+        scheduled_change={"action": "cancel", "effective_at": "2026-08-12T10:00:00Z"}
+    )
+    event = service.verify_webhook(payload, sign(payload))
+
+    upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    async with httpx.AsyncClient() as http:
+        db = Database(http=http, base_url="http://supabase.test", service_role_key="k")
+        await service.handle_event(db, event)
+
+    sent = json.loads(upsert.calls[0].request.content)
+    assert sent["cancel_at_period_end"] is True
+    assert sent["status"] == "active"
+
+
+@respx.mock
+async def test_subscription_paused_maps_to_canceled():
+    # "paused" is a Paddle status our schema doesn't know; a paused sub must
+    # not keep premium entitlements.
+    service = configured_service()
+    payload = premium_subscription(status="paused")
+    event = service.verify_webhook(payload, sign(payload))
+
+    upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    async with httpx.AsyncClient() as http:
+        db = Database(http=http, base_url="http://supabase.test", service_role_key="k")
+        await service.handle_event(db, event)
+
+    sent = json.loads(upsert.calls[0].request.content)
+    assert sent["status"] == "canceled"

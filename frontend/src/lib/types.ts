@@ -11,6 +11,16 @@ export interface Plan {
   daily_handwriting_limit: number;
 }
 
+/** Config served by POST /billing/checkout for the Paddle.js overlay. */
+export interface CheckoutConfig {
+  environment: "sandbox" | "production";
+  client_token: string;
+  price_id: string;
+  custom_data: Record<string, string>;
+  email: string | null;
+  success_url: string;
+}
+
 export interface Profile {
   id: string;
   display_name: string;

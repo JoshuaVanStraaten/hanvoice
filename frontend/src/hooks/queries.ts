@@ -4,10 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { track } from "../lib/analytics";
 import { apiGet, apiPatch, apiPost } from "../lib/api";
+import { openPaddleCheckout } from "../lib/paddle";
 import { supabase } from "../lib/supabase";
 import type {
   Plan,
   BlockCompleteResponse,
+  CheckoutConfig,
   LessonDetail,
   LessonSummary,
   Me,
@@ -106,12 +108,13 @@ export function useUpdateProfile() {
   });
 }
 
+/** Fetches Paddle config from the backend, then opens the overlay checkout.
+ * Entitlements land via webhook; the success redirect refetches useMe. */
 export function useCheckout() {
   return useMutation({
-    mutationFn: (plan: "premium" | "founder") =>
-      apiPost<{ checkout_url: string }>("/billing/checkout", { plan }),
-    onSuccess: ({ checkout_url }) => {
-      window.location.assign(checkout_url);
+    mutationFn: async (plan: "premium" | "founder") => {
+      const config = await apiPost<CheckoutConfig>("/billing/checkout", { plan });
+      await openPaddleCheckout(config);
     },
   });
 }

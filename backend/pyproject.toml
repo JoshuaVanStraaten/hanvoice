@@ -11,7 +11,6 @@ dependencies = [
     "pydantic-settings>=2.4",
     "PyJWT[crypto]>=2.9",
     "structlog>=24.4",
-    "stripe>=10.0",
     "python-multipart>=0.0.9",
     "email-validator>=2.2",
     "sentry-sdk>=2.0",
@@ -45,10 +44,6 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 exclude = ["tests/"]
-
-[[tool.mypy.overrides]]
-module = ["stripe", "stripe.*"]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
