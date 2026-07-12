@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Button, Card, ErrorNote, ScoreRing, Spinner } from "../components/ui";
 import { HangulCanvas } from "../components/HangulCanvas";
 import { useActivityInvalidation } from "../hooks/queries";
+import { track } from "../lib/analytics";
 import { apiPost } from "../lib/api";
 import type { HandwritingAttempt } from "../lib/types";
 
@@ -50,7 +51,10 @@ export function WritingPage() {
         target_text: target,
         image_base64: imageBase64,
       }),
-    onSuccess: () => invalidateActivity(),
+    onSuccess: (result) => {
+      invalidateActivity();
+      track("attempt_scored", { kind: "handwriting", score: result.scores.overall_score });
+    },
   });
 
   function selectTarget(index: number) {

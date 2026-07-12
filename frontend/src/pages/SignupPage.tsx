@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AuthField, AuthLayout } from "../components/AuthLayout";
 import { Button } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
+import { track } from "../lib/analytics";
 import { supabase } from "../lib/supabase";
 
 export function SignupPage() {
@@ -25,6 +26,7 @@ export function SignupPage() {
     setPending(true);
     try {
       await signUp(email, password, displayName);
+      track("signup_submitted");
       // With email confirmation enabled, Supabase creates the account but
       // returns no session until the address is verified.
       const { data } = await supabase.auth.getSession();

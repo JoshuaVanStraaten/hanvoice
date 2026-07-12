@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@fontsource/noto-serif-kr": "^5.2.9",
+    "@sentry/react": "^10.65.0",
     "@supabase/supabase-js": "^2.110.0",
     "@tanstack/react-query": "^5.101.2",
+    "posthog-js": "^1.399.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1"

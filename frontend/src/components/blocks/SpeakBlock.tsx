@@ -11,6 +11,7 @@ import { RecordButton } from "../RecordButton";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
 import { useRecorder } from "../../hooks/useRecorder";
+import { track } from "../../lib/analytics";
 import { apiPostForm } from "../../lib/api";
 import { extensionFor } from "../../lib/audio";
 import type { LessonPhrase, PronunciationAttempt } from "../../lib/types";
@@ -148,6 +149,7 @@ export function SpeakBlock({
     onSuccess: (result) => {
       setAttempt(result);
       invalidateActivity();
+      track("attempt_scored", { kind: "pronunciation", score: result.scores.overall });
       if (result.scores.overall >= PASS_THRESHOLD) onPassed();
     },
   });

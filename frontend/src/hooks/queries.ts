@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { track } from "../lib/analytics";
 import { apiGet, apiPatch, apiPost } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import type {
@@ -40,6 +41,7 @@ export function useJoinWaitlist() {
   return useMutation({
     mutationFn: (email: string) =>
       apiPost<{ status: string }>("/waitlist", { email, source: "landing" }),
+    onSuccess: () => track("waitlist_joined"),
   });
 }
 

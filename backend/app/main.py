@@ -13,6 +13,7 @@ from typing import TypedDict
 
 import httpx
 import jwt
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -48,6 +49,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[AppState]:
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level, json_logs=settings.is_production)
+
+    # Errors-only Sentry (tracing off) — silent no-op without a DSN, so dev
+    # and tests never report. FastAPI is auto-instrumented on init.
+    if settings.sentry_dsn:
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.app_env,
+            traces_sample_rate=0.0,
+        )
 
     app = FastAPI(
         title="HanVoice API",

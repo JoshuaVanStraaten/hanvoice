@@ -10,6 +10,7 @@ import { Dojang } from "../Dojang";
 import { HangulCanvas } from "../HangulCanvas";
 import { Button, ErrorNote, ScoreRing, Spinner } from "../ui";
 import { useActivityInvalidation } from "../../hooks/queries";
+import { track } from "../../lib/analytics";
 import { apiPost } from "../../lib/api";
 import { audioTextFor } from "../../lib/hangulAudio";
 import type { HandwritingAttempt, WritePayload } from "../../lib/types";
@@ -40,6 +41,7 @@ export function WriteBlock({
     onSuccess: (result) => {
       setAttempt(result);
       invalidateActivity();
+      track("attempt_scored", { kind: "handwriting", score: result.scores.overall_score });
       if (result.scores.overall_score >= PASS_THRESHOLD) onPassed();
     },
   });

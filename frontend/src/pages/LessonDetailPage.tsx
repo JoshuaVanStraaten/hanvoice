@@ -3,7 +3,7 @@
  * backend when a scored attempt clears the threshold. Resumes at the first
  * unpassed block. */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -14,6 +14,7 @@ import { SpeakBlock } from "../components/blocks/SpeakBlock";
 import { WriteBlock } from "../components/blocks/WriteBlock";
 import { Button, Card, ErrorNote, MeterBar, SkeletonCards } from "../components/ui";
 import { useCompleteBlock, useLesson } from "../hooks/queries";
+import { track } from "../lib/analytics";
 import type { LessonBlock, LessonDetail } from "../lib/types";
 
 function BlockBody({
@@ -73,6 +74,11 @@ function LessonPlayer({ lesson }: { lesson: LessonDetail }) {
     const firstUnpassed = lesson.blocks.findIndex((b) => !b.passed);
     return firstUnpassed === -1 ? 0 : firstUnpassed;
   });
+
+  // Once per player mount (keyed by slug) — the "first lesson" funnel step.
+  useEffect(() => {
+    track("lesson_started", { lesson: lesson.slug });
+  }, [lesson.slug]);
 
   const blocks = lesson.blocks;
   const block = blocks[index];
