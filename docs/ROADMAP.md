@@ -62,19 +62,24 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    fallback present in the live bundle).
    (13 — hide "Get Premium" for founder-pass holders — ✅ DONE 2026-07-12.)
 
-18. **GTM landing copy swap** (27) — headline/subhead/proof points to the
-    trip-prep positioning in `docs/GTM.md` §2. Copy edit only; Day-0 task of
-    the 14-day first-customer play.
-19. **GTM waitlist offer swap** (28) — waitlist section offers the free
-    Seoul Survival Phrase Card + launch discount (`docs/GTM.md` §4).
-    Delivery manual via Resend; zero automation build.
+18. **GTM landing copy swap** (27) — ✅ DONE (2026-07-12, session 7):
+    hero headline/subhead + the three feature cards swapped to the GTM §2
+    trip-prep copy, and `index.html` meta/OG/Twitter descriptions aligned.
+    Deployed to Vercel and live-verified (strings confirmed in served HTML
+    + production bundle).
+19. **GTM waitlist offer swap** (28) — ✅ DONE (2026-07-12, session 7):
+    waitlist section now offers the free Seoul Survival Phrase Card +
+    founder-launch discount; success message promises the card. The card
+    itself exists (`docs/content/week-01/seoul-survival-phrase-card.html`,
+    print-to-PDF; phrases sourced from `supabase/seed.sql`). Delivery
+    stays manual via Resend.
 
-**→ Immediate after session 6 = items 18–19 (two copy edits from the GTM
-plan) + item 1's go-live founder steps, which wait on Paddle's approval
-email.** The 14-day first-customer play in `docs/GTM.md` §5 sequences the
-money-ask after that email (reservation fallback if it's late). Next
-session: `HanVoice_Fable5_Goal_Prompt_v1.5.xml` (content engine — executes
-Reddit + TikTok).
+**→ Immediate after session 7 = item 1's go-live founder steps (wait on
+Paddle's approval email) + running the content engine
+(`docs/CONTENT_ENGINE.md`, week-01 batch in `docs/content/week-01/`).**
+The 14-day first-customer play in `docs/GTM.md` §5 sequences the money-ask
+after that email (reservation fallback if it's late). No engineering items
+remain in Immediate.
 
 *Challenged and deliberately NOT immediate:* **landing page** — Session 1
 judged it strong; only OG tags ship now. **Retention mechanic** — with zero

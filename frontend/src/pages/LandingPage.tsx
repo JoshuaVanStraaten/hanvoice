@@ -100,7 +100,7 @@ function WaitlistForm() {
   if (waitlist.isSuccess) {
     return (
       <p className="text-sm font-semibold text-jade" role="status">
-        You&apos;re on the list — we&apos;ll email you at launch.
+        You&apos;re on the list — the phrase card is on its way to your inbox.
       </p>
     );
   }
@@ -175,20 +175,20 @@ function PhraseDemo() {
 const FEATURES: Array<{ hangul: string; title: string; body: string; speak: boolean }> = [
   {
     hangul: "발음",
-    title: "Pronunciation, scored",
-    body: "Say each phrase into your phone. Azure speech scoring grades accuracy, fluency, and completeness — down to the word.",
+    title: "Your pronunciation, actually scored",
+    body: "Every phrase you speak gets a 0–100 score from professional speech assessment — you know you're understandable before you need to be.",
     speak: true,
   },
   {
     hangul: "대화",
-    title: "Talk to Minji the barista",
-    body: "Order at a Seoul café in real Korean. Minji answers in character, corrects you gently, and keeps the conversation going.",
+    title: "Rehearse the real situations",
+    body: "Order at a café, take a taxi, haggle at a market, introduce yourself — with an AI partner who stays in character and tracks whether you got what you asked for.",
     speak: true,
   },
   {
     hangul: "쓰기",
-    title: "Hangul by hand",
-    body: "Write characters on screen and get feedback on proportion, strokes, and legibility. Reading follows speaking.",
+    title: "Start reading Hangul in a weekend",
+    body: "Guided lessons with handwriting checks turn menus and signs from noise into words.",
     speak: false,
   },
 ];
@@ -215,11 +215,12 @@ export function LandingPage() {
             말하기 · Speaking-first Korean
           </p>
           <h1 className="hangul-display mx-auto max-w-xl text-4xl sm:text-5xl">
-            Stop studying Korean. Start saying it.
+            Speak Korean before you land in Seoul.
           </h1>
           <p className="mx-auto max-w-lg text-ink-soft">
-            HanVoice scores your pronunciation, chats with you as a café barista, and checks
-            your handwriting — five minutes a day, from your phone.
+            Learn to read Hangul and say the phrases your trip actually needs — with real
+            pronunciation scoring and an AI you can rehearse café, taxi, and market
+            conversations with, out loud.
           </p>
           <div className="flex justify-center gap-3">
             <Link to="/signup">
@@ -267,11 +268,14 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Waitlist */}
+        {/* Waitlist — the GTM lead magnet (docs/GTM.md §4); delivery is a
+            manual Resend broadcast, no automation behind this form. */}
         <section className="flex flex-col items-center gap-3 text-center">
-          <h2 className="text-xl font-bold">Not ready yet?</h2>
+          <h2 className="text-xl font-bold">Trip booked but not ready yet?</h2>
           <p className="max-w-md text-sm text-ink-soft">
-            Leave your email and we&apos;ll tell you when new lessons and scenarios launch.
+            Get the free <strong>Seoul Survival Phrase Card</strong> — the trip phrases from
+            our lessons with pronunciation tips — plus the founder-launch discount when we
+            open the doors.
           </p>
           <WaitlistForm />
         </section>
