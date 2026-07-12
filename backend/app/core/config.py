@@ -41,7 +41,14 @@ class Settings(BaseSettings):
     nvidia_llm_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
     nvidia_llm_model: str = "meta/llama-3.1-70b-instruct"
     nvidia_vision_url: str = "https://integrate.api.nvidia.com/v1/chat/completions"
-    nvidia_vision_model: str = "nvidia/llama-3.1-nemotron-nano-vl-8b-v1"
+    # Handwriting judge. Benchmarked 2026-07-12 against canvas-like strokes:
+    # nemotron-nano-vl-8b zeroed honest attempts (the churn bug), qwen3.5 and
+    # nemotron-12b-v2-vl couldn't separate real writing from a scribble; the
+    # 90B is the only one that passed honest jamo and failed the scribble.
+    nvidia_vision_model: str = "meta/llama-3.2-90b-vision-instruct"
+
+    # Sentry error monitoring (optional — no-op when empty)
+    sentry_dsn: str = ""
 
     # Stripe (optional — billing routes 503 when unconfigured)
     stripe_secret_key: str = ""
