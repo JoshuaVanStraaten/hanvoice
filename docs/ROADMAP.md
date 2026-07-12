@@ -19,26 +19,26 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    (2026-07-12, session 3): Stripe does not accept South African
    businesses (extended-network-via-Paystack only — verified on
    stripe.com/global). Decision: Paddle (merchant of record, SA sellers
-   supported, handles global VAT; see _os/DECISIONS.md). Joshua: create
-   live + sandbox Paddle accounts (instructions delivered). Code (next
-   session): rewrite `backend/app/services/billing.py` + webhook for
-   Paddle Billing, swap frontend checkout, add terms/privacy/refund
-   pages (Paddle website review requires them), then create products.
+   supported, handles global VAT; see _os/DECISIONS.md). Progress
+   2026-07-12 session 3b: live Paddle account exists, **verification
+   SUBMITTED and in review** (domain hanvoice.app, legal pages live at
+   /terms /privacy /refunds — `4223f40`). Code (next session): rewrite
+   `backend/app/services/billing.py` + webhook for Paddle Billing, swap
+   frontend checkout; create products only after Paddle approves.
 2. **Custom SMTP** (2) — ✅ DONE (2026-07-12, session 3): Resend via
    joshuavanstraaten.com wired into Supabase auth, email rate limit
    raised to 30/hr, live-verified (reset mail delivered to inbox in
    seconds). Mirrored in `supabase/config.toml` — a config push now
    requires `RESEND_API_KEY` in the shell, by design.
-3. **Analytics + funnel events** (3) — ✅ CODE SHIPPED (2026-07-12,
-   session 3): PostHog EU, env-gated, full funnel events live in the
-   bundle. Activates when Joshua sets `VITE_POSTHOG_KEY` in Vercel and
-   redeploys (instructions delivered).
+3. **Analytics + funnel events** (3) — ✅ DONE (2026-07-12, session 3b):
+   PostHog EU live and verified — key in Vercel, baked into the deployed
+   bundle, events observed reaching eu.i.posthog.com with 200s.
 4. **Kill the cold start** (4) — ✅ DONE (2026-07-12, session 3):
    `min_machines_running = 1` deployed; warm `/api/health` measured 0.54 s
    (was 5.9 s cold).
-5. **Error monitoring** (7) — ✅ CODE SHIPPED (2026-07-12, session 3):
-   Sentry env-gated on both stacks; activates when Joshua sets the two
-   DSNs (instructions delivered).
+5. **Error monitoring** (7) — ✅ DONE (2026-07-12, session 3b): Sentry
+   live on both stacks; test errors confirmed in both project dashboards
+   (`hanvoice-frontend`, `hanvoice-api`).
 6. **Handwriting judge swap** (8) — ✅ DONE (2026-07-12, session 3):
    `meta/llama-3.2-90b-vision-instruct`, benchmarked against 4 rivals,
    verified live (honest ㅏ now scores 70; old judge gave 0).
@@ -51,7 +51,8 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    fits the session.**
 8. **Conversion polish batch** (5-lite, 10, 11) — goal-chip human
    labels; hardcoded pricing fallback; OG/Twitter tags + static
-   robots.txt/sitemap.xml in `frontend/public/`. *Payoff: shared links
+   robots.txt/sitemap.xml in `frontend/public/` — all URLs must use
+   **https://hanvoice.app** (canonical since 2026-07-12). *Payoff: shared links
    unfurl, the paywall page stops looking broken. Each is under an hour.*
    (13 — hide "Get Premium" for founder-pass holders — ✅ DONE 2026-07-12.)
 

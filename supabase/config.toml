@@ -151,12 +151,13 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails. Production origin — confirmation/reset emails land on the live app.
-site_url = "https://hanvoice.vercel.app"
+site_url = "https://hanvoice.app"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 # The localhost entries keep signup/reset redirects working from the Vite dev server.
 additional_redirect_urls = [
+  "https://hanvoice.app/**",
   "https://hanvoice.vercel.app/**",
   "http://localhost:5173/**",
   "http://127.0.0.1:5173/**",
@@ -246,7 +247,7 @@ host = "smtp.resend.com"
 port = 465
 user = "resend"
 pass = "env(RESEND_API_KEY)"
-admin_email = "hanvoice@joshuavanstraaten.com"
+admin_email = "hello@hanvoice.app"
 sender_name = "HanVoice"
 
 # Uncomment to customize email template

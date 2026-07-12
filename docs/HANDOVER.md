@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 3) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 3 (first v1.3 implementation session) shipped 5 of 8 ROADMAP Immediate items: PostHog funnel analytics (env-gated, awaiting key), Sentry both stacks (env-gated, awaiting DSNs), warm Fly machine (cold start 5.9 s → 0.54 s, verified), handwriting judge swapped to `meta/llama-3.2-90b-vision-instruct` (verified live: honest ㅏ scores 70, was 0), founder-pass buy-button fix. Custom SMTP (Resend) is DONE and live-verified — signups are no longer rate-limited at the door. **Billing pivoted Stripe → Paddle**: Stripe does not accept South African businesses (verified on stripe.com/global), so the Stripe code stays dormant and next session rewrites billing for Paddle Billing (MoR) — see ROADMAP item 1 and DECISIONS.md. Next code work: Paddle billing rewrite + terms/privacy/refund pages (Paddle review needs them), then ROADMAP item 7 (Talk scenarios) and item 8 (polish remainder). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml` while Immediate items remain.**
+**Updated:** 2026-07-12 (session 3b) · **Branch:** `main` · **Status: DEPLOYED on the paid domain, CI green. Session 3b (founder-setup continuation) finished ALL account setup: the app lives at https://hanvoice.app** (bought via Cloudflare Registrar; vercel.app URL still works as alias), Supabase auth + Fly CORS/FRONTEND_URL rewired and live-verified, **Paddle verification SUBMITTED (in review — wait for their email; do NOT create products/prices until the billing code rewrite)**, PostHog verified receiving events, Sentry verified receiving test errors on BOTH stacks, auth mail now sends from **hello@hanvoice.app** (hanvoice.app verified in Resend, reset mail live-verified into a real inbox with redirect to the new domain). Legal pages live since `4223f40`. Terms/privacy/refund pages: DONE. Next code work: **Paddle billing rewrite** (blocked on Paddle approval for products, but the code rewrite can start now) + ROADMAP item 7 (Talk scenarios) and item 8 (polish remainder — OG tags must use hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
 
 ## What exists
 
@@ -22,28 +22,37 @@ tab still works (canvas extracted to `HangulCanvas`).
 
 ## Live environment
 
-- **Production (deployed 2026-07-05, full post-deploy checklist passed):**
-  - Frontend: **https://hanvoice.vercel.app** (Vercel project `hanvoice`,
-    `frontend/vercel.json` SPA rewrites; `VITE_*` vars set as production env —
-    Vite bakes them at build, so changing one requires a redeploy).
+- **Production (deployed 2026-07-05, full post-deploy checklist passed;
+  domain added 2026-07-12):**
+  - Frontend: **https://hanvoice.app** — canonical since 2026-07-12
+    (registered at Cloudflare Registrar, DNS = Cloudflare zone, apex CNAME
+    `844769263b8c30c1.vercel-dns-017.com` with proxy **DNS-only** — never
+    turn the orange cloud on, it breaks Vercel certs).
+    **https://hanvoice.vercel.app** still works as alias. (Vercel project
+    `hanvoice`, `frontend/vercel.json` SPA rewrites; `VITE_*` vars set as
+    production env — Vite bakes them at build, so changing one requires a
+    redeploy.) `VITE_POSTHOG_KEY` + `VITE_SENTRY_DSN` are set and live-verified.
   - Backend: **https://hanvoice-api.fly.dev** (Fly app `hanvoice-api`, region
-    `lhr` — Dublin had no capacity; `backend/fly.toml`; single machine, single
-    uvicorn worker, scale-to-zero when idle so first request after a lull is a
-    cold start). Secrets: Supabase, Azure, NVIDIA + `APP_ENV`/`LOG_LEVEL` +
-    `CORS_ORIGINS`/`FRONTEND_URL`=the Vercel origin. `STRIPE_*` unset → billing
-    503s by design.
+    `lhr` — Dublin had no capacity; `backend/fly.toml`; single machine kept
+    warm via `min_machines_running = 1`). Secrets: Supabase, Azure, NVIDIA +
+    `APP_ENV`/`LOG_LEVEL` + `SENTRY_DSN` (verified: test event reached the
+    hanvoice-api Sentry project) + `CORS_ORIGINS` =
+    `https://hanvoice.app,https://hanvoice.vercel.app` (both preflight-verified)
+    and `FRONTEND_URL` = `https://hanvoice.app`. `STRIPE_*` unset → billing
+    503s by design (Paddle rewrite pending).
   - GitHub: **https://github.com/JoshuaVanStraaten/hanvoice** (private). CI
     green (first run needed `python -m pytest`, `fc06554`).
   - Verified live: login, cross-origin usage read (CORS), scored pronunciation
     attempt (79.6) metering usage, block teaching-audio endpoint, service
     worker active + installable manifest.
-  - Auth email redirects fixed (`45acdc8`): Supabase `site_url` →
-    hanvoice.vercel.app with prod+localhost:5173 allowlist (pushed via
-    `supabase config push`; `supabase/config.toml` now mirrors the remote auth
-    config — keep it that way, a push syncs the whole [auth] block), and
-    `signUp` passes `emailRedirectTo` per origin. Confirmation links sent
-    *before* the fix still embed localhost:3000 — old pending signups should
-    just sign in (token already consumed) or re-request.
+  - Auth email redirects (`45acdc8`, re-pointed 2026-07-12): Supabase
+    `site_url` → **https://hanvoice.app**, allowlist = hanvoice.app +
+    hanvoice.vercel.app + localhost:5173 (pushed via `supabase config push`;
+    `supabase/config.toml` mirrors the remote auth config — keep it that way,
+    a push syncs the whole [auth] block and needs `RESEND_API_KEY` in the
+    shell), and `signUp` passes `emailRedirectTo` per origin. Live-verified:
+    reset mail lands from hello@hanvoice.app with
+    `redirect_to=https://hanvoice.app`.
 - **Supabase project `hanvoice`** (`mxibibkcaarltsbkomvm`, eu-west-1, free tier) —
   migrated + seeded. `frontend/.env` and `backend/.env` are wired (gitignored).
 - **Content:** 13 lessons in two sections — **"Read & write Hangul"** (8 lessons,
@@ -60,6 +69,51 @@ tab still works (canvas extracted to `HangulCanvas`).
   pass → 200/day quotas). The founder entitlement path is therefore live-tested.
 - User's other Supabase project **pettlo-poc was paused** to free the free-tier
   slot — don't unpause/delete without asking.
+
+## Founder account setup: COMPLETE (session 3b, 2026-07-12)
+
+Every account is live and verified with evidence. Per-account end state:
+
+- **Domain: hanvoice.app** — bought at Cloudflare Registrar (~$14/yr,
+  auto-renew on). Attached to Vercel project `hanvoice` (verified, serving
+  200 with valid cert), apex CNAME `844769263b8c30c1.vercel-dns-017.com`
+  (Vercel's newer edge — the "DNS Change Recommended" badge was resolved),
+  proxy DNS-only. hanvoice.vercel.app remains an alias.
+- **Resend: hanvoice.app verified** (eu-west-1, wired via Resend's
+  Cloudflare auto-configure). Auth sender is now **hello@hanvoice.app**.
+  The API key was REPLACED (`hanvoice-supabase-smtp-v2`, sending-scoped to
+  hanvoice.app) because Resend sending keys are domain-scoped and the old
+  key could not send from the new domain (Supabase /recover returned 500
+  "Error sending recovery email" until the swap). New key lives in
+  `backend/.env` as `RESEND_API_KEY` and is pushed into Supabase SMTP.
+  **Small cleanup left: revoke the old key** (scoped to
+  joshuavanstraaten.com) in the Resend dashboard.
+- **Supabase auth**: `site_url` = https://hanvoice.app, allowlist has both
+  prod origins + localhost:5173. Live-verified end-to-end: POST /recover →
+  mail from hello@hanvoice.app in a real inbox with
+  `redirect_to=https://hanvoice.app`.
+- **Fly**: `CORS_ORIGINS=https://hanvoice.app,https://hanvoice.vercel.app`
+  (both origins preflight-verified), `FRONTEND_URL=https://hanvoice.app`.
+- **Paddle: verification SUBMITTED, IN REVIEW** ("We're reviewing your
+  details", hanvoice.app shows "In review"; typically a few business days,
+  they email; sellers@paddle.com to amend info). Submitted with the
+  hanvoice.app URLs (/#pricing, /terms, /privacy, /refunds — all confirmed
+  200), trading name "HanVoice", business start 2026-07-05, sole trader,
+  compliance answers all "No". **Do NOT create products/prices until the
+  Paddle code rewrite** (ROADMAP item 1); the rewrite itself can start
+  before approval.
+- **PostHog: ACTIVE, verified** — page loads from hanvoice.app POST to
+  eu.i.posthog.com and return 200.
+- **Sentry: ACTIVE on both stacks, verified** — a thrown test error from
+  the live frontend reached project `hanvoice-frontend` (ingest 200 +
+  visible in Issues); a `capture_message` fired from inside the Fly machine
+  (`flyctl ssh console -C 'python -c …sentry_sdk.init()…'` — init with no
+  args reads the SENTRY_DSN env) reached project `hanvoice-api` (message
+  "20260712", confirmed in dashboard).
+
+**Nothing in this section blocks build work anymore. Next session =
+`HanVoice_Fable5_Goal_Prompt_v1.3.xml`: Paddle billing rewrite + Talk
+scenarios (ROADMAP items 1 and 7).**
 
 ## What's left
 
@@ -149,6 +203,16 @@ frontend tests green):
 
 ## Gotchas (hard-won, don't relearn)
 
+- **Resend "Sending access" API keys are scoped to ONE domain.** Changing
+  the Supabase SMTP sender to a different domain silently breaks auth mail —
+  GoTrue surfaces it as `500 unexpected_failure "Error sending recovery
+  email"` on `/auth/v1/recover`, with no mention of SMTP. Diagnose by
+  POSTing to api.resend.com/emails with the key directly; fix by minting a
+  key scoped to the new domain and re-running `supabase config push`.
+- **hanvoice.app DNS lives in Cloudflare but must stay proxy-OFF** (grey
+  cloud, "DNS only") on the apex CNAME — the orange proxy in front of
+  Vercel breaks cert issuance. Cloudflare flattens the CNAME at apex;
+  that's expected.
 - **Supabase signs ES256 now:** legacy HS256 secret verifies nothing; backend
   fetches JWKS (`core/security.py`, `199855f`). HS256 kept for tests.
 - **NVIDIA's REST API has no speech models** — ASR/TTS are gRPC/Riva only. That's
