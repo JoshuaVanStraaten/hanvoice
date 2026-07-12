@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 3b) · **Branch:** `main` · **Status: DEPLOYED on the paid domain, CI green. Session 3b (founder-setup continuation) finished ALL account setup: the app lives at https://hanvoice.app** (bought via Cloudflare Registrar; vercel.app URL still works as alias), Supabase auth + Fly CORS/FRONTEND_URL rewired and live-verified, **Paddle verification SUBMITTED (in review — wait for their email; do NOT create products/prices until the billing code rewrite)**, PostHog verified receiving events, Sentry verified receiving test errors on BOTH stacks, auth mail now sends from **hello@hanvoice.app** (hanvoice.app verified in Resend, reset mail live-verified into a real inbox with redirect to the new domain). Legal pages live since `4223f40`. Terms/privacy/refund pages: DONE. Next code work: **Paddle billing rewrite** (blocked on Paddle approval for products, but the code rewrite can start now) + ROADMAP item 7 (Talk scenarios) and item 8 (polish remainder — OG tags must use hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
+**Updated:** 2026-07-12 (session 4) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 4 shipped both remaining big Immediate items.** (1) **Paddle billing rewrite DONE** (`f4bd0d9`): backend `/billing/checkout` serves Paddle.js overlay config, webhook verifies Paddle-Signature + grants entitlements with price-id cross-checks, frontend opens the overlay via `@paddle/paddle-js`; billing 503s by design until PADDLE_* env vars are set — **next founder action: Paddle sandbox setup (steps below); live products wait for Paddle approval (verification still in review)**. (2) **Talk scenarios DONE**: 5 published scenarios live (café + first-meeting, restaurant-lunch, taxi-to-hotel, market-shopping), goal patterns deployed to Fly, live-verified end-to-end. Remaining code work: ROADMAP item 8 (goal-chip labels, pricing fallback, OG tags + robots/sitemap — all URLs hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
 
 ## What exists
 
@@ -58,9 +58,13 @@ tab still works (canvas extracted to `HangulCanvas`).
 - **Content:** 13 lessons in two sections — **"Read & write Hangul"** (8 lessons,
   62 blocks: what-is-hangul → vowels → consonants → building syllables → more
   letters → batchim → sound changes → reading + 해요체) and **"Speak"** (the 5
-  phrase lessons as speak-block units) — plus 1 conversation scenario (iced
-  americano), barista prompt v1. Content is data — new lessons are an INSERT,
-  no deploy. `supabase/seed.sql` mirrors the live content.
+  phrase lessons as speak-block units) — plus **5 conversation scenarios**
+  (since session 4): cafe-iced-americano, first-meeting, restaurant-lunch,
+  taxi-to-hotel ★★, market-shopping ★★ — one per Speak lesson, Minji plays
+  every role. Canonical prompts in `prompts/scenarios/*_v1.md`. Content is
+  data — new lessons/scenarios are an INSERT, no deploy (but new **goal
+  patterns** live in `backend/app/services/goals.py` and DO need a deploy).
+  `supabase/seed.sql` mirrors the live content.
 - **Azure Speech** (northeurope, F0): pronunciation scoring, STT for conversation
   turns, Korean neural TTS (SunHi). **NVIDIA**: Llama barista chat + Nemotron-VL
   handwriting vision. All verified live, in-browser and via API.
@@ -69,6 +73,56 @@ tab still works (canvas extracted to `HangulCanvas`).
   pass → 200/day quotas). The founder entitlement path is therefore live-tested.
 - User's other Supabase project **pettlo-poc was paused** to free the free-tier
   slot — don't unpause/delete without asking.
+
+## Paddle billing: CODE DONE (session 4) — founder steps remain
+
+**Architecture (`f4bd0d9`):** client-opened Paddle.js **overlay checkout** +
+server-verified webhook. `POST /billing/checkout` (authed) returns
+`{environment, client_token, price_id, custom_data: {user_id, plan}, email,
+success_url}`; the frontend (`lib/paddle.ts`) initializes Paddle.js with that
+and opens the overlay. No Paddle API key server-side, no `VITE_*` billing
+vars — changing billing config never needs a Vercel redeploy.
+`POST /billing/webhook` verifies `Paddle-Signature` (ts/h1 HMAC-SHA256 of
+`{ts}:{raw_body}`, 60 s replay window) and handles `transaction.completed`
+(founder pass; ignores subscription-linked transactions) and
+`subscription.*` (premium upsert; `paused`/unknown statuses map to
+`canceled`, `scheduled_change.action` → `cancel_at_period_end`). Because
+`custom_data` originates client-side, **grants cross-check the purchased
+price id against the plan label** — a tampered label buys nothing.
+Backend env (all in `backend/.env`, currently empty → 503):
+`PADDLE_ENV` (sandbox|production), `PADDLE_CLIENT_TOKEN`,
+`PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_PREMIUM`, `PADDLE_PRICE_FOUNDER`.
+
+**Founder: sandbox test (can do NOW, no approval needed):**
+1. Create a sandbox account at https://sandbox-login.paddle.com/signup
+   (separate from the live account, instant, no verification).
+2. Paddle sandbox dashboard → **Catalog → Products → + New product**:
+   "HanVoice Founder Pass" → price: one-time, $69.00 USD. Then
+   "HanVoice Premium" → price: recurring monthly, $14.99 USD. Copy both
+   price IDs (`pri_…`).
+3. **Developer tools → Authentication → Client-side tokens → + New**: copy
+   the token (`test_…`).
+4. **Developer tools → Notifications → + New destination**: URL =
+   `https://hanvoice-api.fly.dev/api/billing/webhook` — for LOCAL testing
+   use a tunnel or the dashboard's simulator instead; events:
+   `transaction.completed`, `subscription.created`, `subscription.updated`,
+   `subscription.canceled` (add `subscription.paused`/`resumed` if offered).
+   Copy the **secret key** (`pdl_ntfset_…`).
+5. Fill the five `PADDLE_*` values in `backend/.env`
+   (`PADDLE_ENV=sandbox`), restart the backend, run the app locally
+   (verify skill), click **Get Founder Pass** → overlay opens → pay with
+   test card `4242 4242 4242 4242` (any future expiry/CVC). Webhook lands →
+   `/me` shows `has_founder_pass` (webhook must be reachable — use the
+   Notifications **simulator** against a tunnel, or test the overlay
+   client-side and fire simulated events for the grant path).
+6. Same for Premium with the other button.
+
+**Founder: go-live (ONLY after Paddle approval email):** repeat steps 2–4
+in the LIVE dashboard (live client token has no `test_` prefix), then:
+`flyctl secrets set PADDLE_ENV=production PADDLE_CLIENT_TOKEN=… PADDLE_WEBHOOK_SECRET=… PADDLE_PRICE_PREMIUM=… PADDLE_PRICE_FOUNDER=…`
+(from `backend/`; secrets set triggers a restart). The overlay checkout
+requires the domain to be approved — hanvoice.app is the domain under
+review, so this comes free with approval.
 
 ## Founder account setup: COMPLETE (session 3b, 2026-07-12)
 
@@ -121,11 +175,14 @@ scenarios (ROADMAP items 1 and 7).**
 finding list** (Session 1 product/tech audit = items 1–19; Session 2
 educational audit = items 20–26 under the "Educational" heading). Do not
 re-audit either dimension — append to BACKLOG, reprioritize in ROADMAP.
-ROADMAP "Immediate" after session 3: items 3–6 + 13 are DONE (see per-item
-annotations); items 1–2 (Stripe, SMTP) are FOUNDER ACTIONS with
-instructions delivered; remaining code work is item 7 (3–4 Talk scenarios —
-café prompt is the template, content = INSERT) then item 8 (goal-chip
-labels, pricing fallback, OG tags + static robots/sitemap).
+ROADMAP "Immediate" after session 4: items 2–7 + 13 are DONE (see per-item
+annotations); item 1 (Paddle) is code-done with founder steps above; the
+ONLY remaining Immediate code work is item 8 (goal-chip human labels,
+hardcoded pricing fallback, OG/Twitter tags + static robots.txt/sitemap.xml
+in `frontend/public/` — all URLs must use https://hanvoice.app). After item
+8, Immediate is empty → next session uses
+`HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market) or promotes Next
+Month items via v1.3.
 Analytics and Sentry are live-but-dormant: they activate when Joshua sets
 `VITE_POSTHOG_KEY` / `VITE_SENTRY_DSN` in Vercel (+ redeploy) and
 `SENTRY_DSN` as a Fly secret.
@@ -265,5 +322,12 @@ frontend tests green):
   as every `VITE_*` var. Funnel event names: signup_submitted, signed_in,
   lesson_started, attempt_scored, upgrade_clicked, waitlist_joined
   (`frontend/src/lib/analytics.ts`).
+- **`POST /conversations/{id}/turns` takes multipart form-data** (`text` as a
+  Form field, `audio` as a file) — JSON bodies get a 422/400. Scripted turns:
+  `httpx.post(..., data={"text": "…"})`.
+- **Paddle webhook signature format is `ts=…;h1=…`** (semicolon, not comma;
+  colon-joined signed payload) — do not confuse with Stripe's `t=…,v1=…`.
+  Sandbox and live are entirely separate Paddle accounts with separate
+  tokens/prices; `PADDLE_ENV` must match the account the tokens came from.
 - Local dev drive recipe (servers, test login, deterministic speak-block pass
   via Azure TTS WAV): `.claude/skills/verify/SKILL.md`.

@@ -9,11 +9,12 @@ Each item: **what · where · impact**. Severity = distance from revenue.
 
 ## Critical — nobody can pay / nobody gets in
 
-1. **Stripe not configured.** `Get Premium` on /subscription →
-   `POST /api/billing/checkout` 503 → "Payments are not enabled on this
-   deployment." Verified live. Every visitor with a card out is a dead end;
-   revenue is structurally impossible until this ships. (HANDOVER item 1 —
-   products/prices, 4 Fly secrets, webhook.)
+1. **Billing not configured** (was "Stripe not configured"; Paddle since
+   2026-07-12). ⚙ CODE DONE session 4 (`f4bd0d9`): full Paddle Billing
+   integration shipped and tested; routes 503 until PADDLE_* env vars are
+   set. Remaining = founder: sandbox account + products + sandbox test,
+   then (after Paddle approval) live products + 5 Fly secrets. Steps in
+   HANDOVER.md.
 2. **Email confirmation gates first use on rate-limited SMTP.** Signup ends at
    "Check your email" (`SignupPage.tsx:45`), but Supabase built-in SMTP allows
    ~3 emails/hour. The 4th signup in any hour never gets the email and is lost
@@ -50,11 +51,10 @@ Each item: **what · where · impact**. Severity = distance from revenue.
    only one passing honest jamo (70) while failing a scribble control
    (55 < 60 gate). Verified live: the ㅏ the old judge zeroed now scores 70.
    ~~Handwriting judge fails honest attempts.~~
-9. **Talk has one scenario.** The marquee feature (only "Order an iced
-   Americano", ★ difficulty) is exhausted in ~5 minutes. Nobody pays $69
-   lifetime for one café chat; scenario depth is the clearest willingness-to-
-   pay lever. Content is data (INSERT, no deploy) — cheapest high-impact work
-   in the backlog.
+9. ✅ **DONE 2026-07-12 (session 4).** Talk now has 5 scenarios: café +
+   first-meeting, restaurant-lunch, taxi-to-hotel (★★), market-shopping
+   (★★) — one per Speak lesson. Live-verified openers + goal detection.
+   Prompts in `prompts/scenarios/`, mirrored in seed.sql.
 
 ## Medium — polish that pays for itself
 
@@ -146,11 +146,10 @@ learner reaching conversation (and staying subscribed):
     "NOUN + 주세요 = please give me NOUN"; 이에요/예요 and 네/아니요 are
     never taught at all. One explain block per Speak lesson + 2–3 pattern
     micro-lessons converts memorized strings into generative language.
-26. **Lesson→scenario loop is broken.** (Medium, pairs with item 9)
-    restaurant-basics, getting-around, and money-talk teach phrases with no
-    scenario to use them in — the practice feature that would cement them
-    (and justify paying) doesn't exist for 4 of 5 Speak lessons. Scenario
-    per existing lesson first; new topics second.
+26. ✅ **DONE 2026-07-12 (session 4, with item 9).** Every Speak lesson now
+    has a matching scenario: first-meetings→first-meeting,
+    restaurant-basics→restaurant-lunch, getting-around→taxi-to-hotel,
+    money-talk→market-shopping, cafe-essentials→cafe-iced-americano.
 
 **Minimum path to "basic conversational ability"** (specification, not
 feature wishlist — everything is INSERTs + two small mechanics):

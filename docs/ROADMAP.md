@@ -15,16 +15,17 @@ longer than one sentence, the item went to Future or the NOT list.
 Revenue is structurally impossible and the front door leaks; fix both, then
 make the marquee feature worth paying for. Nothing else jumps this queue.
 
-1. **Billing activation — now Paddle, not Stripe** (1) — ⟳ REPLANNED
-   (2026-07-12, session 3): Stripe does not accept South African
-   businesses (extended-network-via-Paystack only — verified on
-   stripe.com/global). Decision: Paddle (merchant of record, SA sellers
-   supported, handles global VAT; see _os/DECISIONS.md). Progress
-   2026-07-12 session 3b: live Paddle account exists, **verification
-   SUBMITTED and in review** (domain hanvoice.app, legal pages live at
-   /terms /privacy /refunds — `4223f40`). Code (next session): rewrite
-   `backend/app/services/billing.py` + webhook for Paddle Billing, swap
-   frontend checkout; create products only after Paddle approves.
+1. **Billing activation — now Paddle, not Stripe** (1) — ⚙ CODE DONE
+   (2026-07-12, session 4): full Paddle Billing rewrite shipped (`f4bd0d9`)
+   — backend serves Paddle.js overlay config from `/billing/checkout`,
+   webhook verifies Paddle-Signature and grants founder pass /
+   subscription with price-id cross-checks; frontend opens the overlay
+   via `@paddle/paddle-js`. Billing 503s (by design) until PADDLE_* env
+   vars exist. **Remaining = founder actions:** create the sandbox
+   account + products, set PADDLE_* locally and sandbox-test; after
+   Paddle approves the live account (verification still in review),
+   create live products and set the four PADDLE_* Fly secrets +
+   `PADDLE_ENV=production`. Click-by-click in HANDOVER.md.
 2. **Custom SMTP** (2) — ✅ DONE (2026-07-12, session 3): Resend via
    joshuavanstraaten.com wired into Supabase auth, email rate limit
    raised to 30/hr, live-verified (reset mail delivered to inbox in
@@ -43,12 +44,12 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    `meta/llama-3.2-90b-vision-instruct`, benchmarked against 4 rivals,
    verified live (honest ㅏ now scores 70; old judge gave 0).
 7. **3–4 new Talk scenarios matching existing Speak lessons** (9, 26) —
-   restaurant, directions/taxi, market/shopping, first meeting. Content is
-   an INSERT; the café prompt is the proven template. *Payoff: the marquee
-   feature goes from 5 minutes of value to an evening of value — the
-   clearest willingness-to-pay lever in the backlog.* **← NEXT, alongside
-   the Paddle rewrite (item 1): revenue plumbing outranks it if only one
-   fits the session.**
+   ✅ DONE (2026-07-12, session 4): first-meeting, restaurant-lunch,
+   taxi-to-hotel, market-shopping inserted into the live DB (5 published
+   scenarios total), mirrored in `supabase/seed.sql`, canonical prompts
+   in `prompts/scenarios/`. 12 new goal patterns in `services/goals.py`
+   deployed to Fly. Live-verified: all four openers valid + TTS audio;
+   typed turn 명동까지 가 주세요 detected `stated_destination`.
 8. **Conversion polish batch** (5-lite, 10, 11) — goal-chip human
    labels; hardcoded pricing fallback; OG/Twitter tags + static
    robots.txt/sitemap.xml in `frontend/public/` — all URLs must use
