@@ -24,9 +24,11 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    session): rewrite `backend/app/services/billing.py` + webhook for
    Paddle Billing, swap frontend checkout, add terms/privacy/refund
    pages (Paddle website review requires them), then create products.
-2. **Custom SMTP** (2) — ⏸ FOUNDER ACTION (2026-07-12, session 3): Resend
-   setup instructions delivered (domain verify, SMTP creds into Supabase).
-   Blocked on Joshua.
+2. **Custom SMTP** (2) — ✅ DONE (2026-07-12, session 3): Resend via
+   joshuavanstraaten.com wired into Supabase auth, email rate limit
+   raised to 30/hr, live-verified (reset mail delivered to inbox in
+   seconds). Mirrored in `supabase/config.toml` — a config push now
+   requires `RESEND_API_KEY` in the shell, by design.
 3. **Analytics + funnel events** (3) — ✅ CODE SHIPPED (2026-07-12,
    session 3): PostHog EU, env-gated, full funnel events live in the
    bundle. Activates when Joshua sets `VITE_POSTHOG_KEY` in Vercel and
