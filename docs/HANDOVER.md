@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-05 · **Branch:** `main` · **Status: DEPLOYED. App live at https://hanvoice.vercel.app, API at https://hanvoice-api.fly.dev, CI green on GitHub. Next: Stripe — see item 1 below.**
+**Updated:** 2026-07-12 · **Branch:** `main` · **Status: DEPLOYED + AUDITED. App live at https://hanvoice.vercel.app, API at https://hanvoice-api.fly.dev, CI green. Full product/technical audit done (Session 1 of the 5-session revenue push) — findings live in `docs/BACKLOG.md`. Next: Stripe (BACKLOG item 1); next session prompt is `HanVoice_Fable5_Goal_Prompt_v1.2.xml`.**
 
 ## What exists
 
@@ -61,7 +61,23 @@ tab still works (canvas extracted to `HangulCanvas`).
 - User's other Supabase project **pettlo-poc was paused** to free the free-tier
   slot — don't unpause/delete without asking.
 
-## What's left (in rough priority order)
+## What's left
+
+**→ `docs/BACKLOG.md` is now the single prioritized backlog** (created by the
+2026-07-12 audit; severity-ordered, one line + impact each). Do not re-audit —
+append to it. The list below is kept only as original context for items the
+backlog references by number. Top of the backlog: **1) Stripe** (products/
+prices, 4 Fly secrets, webhook — billing 503s until then), **2) custom SMTP**
+(Supabase built-in is ~3 emails/hr and confirmation gates first use),
+**3) analytics** (none exists — PostHog/Plausible + funnel events).
+
+Audit facts worth keeping: API cold start measured 5.9 s (scale-to-zero);
+robots.txt/sitemap.xml are swallowed by the SPA rewrite (soft-404 HTML); no
+OG tags; Talk goal chips render raw keys (`ordered_drink`); founder accounts
+still see "Get Premium"; landing page + auth + lesson player + talk loop all
+verified working live on a 390×844 viewport, console clean.
+
+### Original notes (pre-audit)
 
 1. **Stripe (NEXT)** — create products/prices ($69 founder one-time, $14.99/mo
    premium), set the four STRIPE_* env vars as Fly secrets, point the webhook
