@@ -52,12 +52,19 @@ make the marquee feature worth paying for. Nothing else jumps this queue.
    in `prompts/scenarios/`. 12 new goal patterns in `services/goals.py`
    deployed to Fly. Live-verified: all four openers valid + TTS audio;
    typed turn 명동까지 가 주세요 detected `stated_destination`.
-8. **Conversion polish batch** (5-lite, 10, 11) — goal-chip human
-   labels; hardcoded pricing fallback; OG/Twitter tags + static
-   robots.txt/sitemap.xml in `frontend/public/` — all URLs must use
-   **https://hanvoice.app** (canonical since 2026-07-12). *Payoff: shared links
-   unfurl, the paywall page stops looking broken. Each is under an hour.*
+8. **Conversion polish batch** (5-lite, 10, 11) — ✅ DONE (2026-07-12,
+   session 5): `goalLabel()` human labels for all 15 goal keys (Talk cards
+   + session chips), hardcoded `FALLBACK_PLANS` pricing on the landing
+   page (reconciles against the live plans table), OG/Twitter tags in
+   `index.html` + static robots.txt/sitemap.xml in `frontend/public/` —
+   all URLs https://hanvoice.app. Deployed and live-verified via curl
+   (real robots/sitemap content types, OG tags in served HTML, labels +
+   fallback present in the live bundle).
    (13 — hide "Get Premium" for founder-pass holders — ✅ DONE 2026-07-12.)
+
+**→ Immediate is now EMPTY of code work.** Item 1's go-live founder steps
+wait on Paddle's approval email. Next session: promote Next Month items via
+v1.3, or start `HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market).
 
 *Challenged and deliberately NOT immediate:* **landing page** — Session 1
 judged it strong; only OG tags ship now. **Retention mechanic** — with zero

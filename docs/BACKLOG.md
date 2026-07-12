@@ -31,13 +31,12 @@ Each item: **what · where · impact**. Severity = distance from revenue.
 4. ✅ **DONE 2026-07-12.** `min_machines_running = 1` deployed; warm
    `/api/health` measured 0.54 s. ~~~6 s API cold start on nearly every
    visit.~~
-5. **No SEO surface at all.** SPA ships an empty `<div id="root">` to
-   crawlers; `robots.txt` and `sitemap.xml` are swallowed by the SPA rewrite
-   and return the HTML shell (soft-404s, verified); no Open Graph/Twitter
-   meta, so shared links (the K-drama fan channel!) render bare. Organic
-   acquisition is currently zero-capacity. Fix: static robots/sitemap in
-   `frontend/public/`, OG tags in `index.html`, prerender or SSG the landing
-   page later.
+5. ✅ **DONE 2026-07-12 (session 5, the "lite" part).** Static
+   `robots.txt` + `sitemap.xml` in `frontend/public/` (served with correct
+   content types, no more soft-404s — Vercel checks the filesystem before
+   the SPA rewrite) and OG/Twitter meta in `index.html`, all URLs
+   https://hanvoice.app, live-verified via curl. Prerender/SSG of the
+   landing page stays a Next Quarter item (16). ~~No SEO surface at all.~~
 6. **No social login.** Email+password+confirmation is the highest-friction
    path for a mobile K-pop/K-drama audience — and Google/Apple OAuth
    (Supabase supports both) also sidesteps the SMTP bottleneck in item 2.
@@ -58,13 +57,16 @@ Each item: **what · where · impact**. Severity = distance from revenue.
 
 ## Medium — polish that pays for itself
 
-10. **Goal chips show raw internal keys.** Talk scenario card and session
-    header render `ordered_drink`, `stated_size_or_temp`, `said_thanks`
-    (verified live). Undermines the marquee feature's credibility; map keys →
-    human labels ("Ordered a drink") in data or a small frontend map.
-11. **Landing pricing blocks on the cold API.** "Loading pricing" for ~6 s on
-    a cold visit (see item 4) for three effectively static tiers. Ship a
-    hardcoded fallback that reconciles when the fetch lands.
+10. ✅ **DONE 2026-07-12 (session 5).** `goalLabel()` map in
+    `frontend/src/lib/goals.ts` covers all 15 backend goal keys, with a
+    de-snake fallback for future keys; used on the Talk cards and the
+    session chips. Keep it in sync with `backend/app/services/goals.py`.
+    ~~Goal chips show raw internal keys.~~
+11. ✅ **DONE 2026-07-12 (session 5).** `FALLBACK_PLANS` in
+    `LandingPage.tsx` (mirrors the plans seed, price-ascending) renders
+    instantly; the live `plans` fetch reconciles. Spinner and error note
+    removed from the pricing section. ~~Landing pricing blocks on the cold
+    API.~~
 12. **"Native language" is a free-text field containing `en`.** /settings.
     Confusing to a real user; make it a small select (en/es/ja/zh/…).
 13. ✅ **DONE 2026-07-12.** Buy buttons hidden for founder-pass holders

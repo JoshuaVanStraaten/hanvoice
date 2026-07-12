@@ -1,6 +1,6 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 4) · **Branch:** `main` · **Status: DEPLOYED, CI green. Session 4 shipped both remaining big Immediate items.** (1) **Paddle billing rewrite DONE** (`f4bd0d9`): backend `/billing/checkout` serves Paddle.js overlay config, webhook verifies Paddle-Signature + grants entitlements with price-id cross-checks, frontend opens the overlay via `@paddle/paddle-js`; billing 503s by design until PADDLE_* env vars are set — **sandbox E2E VERIFIED (session 4b): real overlay checkout on hanvoice.app → webhook → founder pass granted in live DB; production currently runs sandbox billing until go-live. Only remaining founder action: the go-live steps after Paddle approval (below).** (2) **Talk scenarios DONE**: 5 published scenarios live (café + first-meeting, restaurant-lunch, taxi-to-hotel, market-shopping), goal patterns deployed to Fly, live-verified end-to-end. Remaining code work: ROADMAP item 8 (goal-chip labels, pricing fallback, OG tags + robots/sitemap — all URLs hanvoice.app). Re-run `HanVoice_Fable5_Goal_Prompt_v1.3.xml`.
+**Updated:** 2026-07-12 (session 5) · **Branch:** `main` · **Status: DEPLOYED, ROADMAP Immediate is EMPTY of code work.** Session 5 shipped item 8, the conversion polish batch, deployed to Vercel and live-verified: (1) goal chips now show human labels — `goalLabel()` in `frontend/src/lib/goals.ts` maps all 15 backend goal keys (de-snake fallback for future keys), used in `TalkPage` + `ConversationPage`; (2) landing pricing renders instantly from `FALLBACK_PLANS` (mirrors the plans seed) and reconciles when the live `plans` fetch lands — spinner/error note removed; (3) OG/Twitter tags in `index.html`, static `robots.txt` + `sitemap.xml` in `frontend/public/` (no more SPA-rewrite soft-404s), all URLs https://hanvoice.app. Frontend: 42 tests, eslint + tsc clean. **Only open Immediate thread: Paddle go-live founder steps once the approval email arrives (see Paddle section — don't touch billing before that; `PADDLE_ENV=sandbox` in production is deliberate). Next session: `HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market), or promote Next Month items via v1.3.**
 
 ## What exists
 
@@ -8,7 +8,7 @@ The full application (M1–M10 of `docs/superpowers/plans/2026-07-03-hanvoice-fu
 plus the **real curriculum** (`docs/superpowers/plans/2026-07-04-lesson-blocks-curriculum.md`,
 design in `docs/superpowers/specs/2026-07-04-lesson-blocks-curriculum-design.md`):
 FastAPI backend (112 tests; ruff + strict mypy clean), React PWA frontend
-(37 tests; eslint + tsc clean), Docker images smoke-tested, CI workflow written.
+(42 tests; eslint + tsc clean), Docker images smoke-tested, CI workflow written.
 See `README.md`, `docs/architecture.md`, `docs/api.md`, `docs/deployment.md`, `docs/schema.md`.
 
 **Curriculum architecture (new):** lessons are ordered `lesson_blocks`
@@ -182,12 +182,9 @@ scenarios (ROADMAP items 1 and 7).**
 finding list** (Session 1 product/tech audit = items 1–19; Session 2
 educational audit = items 20–26 under the "Educational" heading). Do not
 re-audit either dimension — append to BACKLOG, reprioritize in ROADMAP.
-ROADMAP "Immediate" after session 4: items 2–7 + 13 are DONE (see per-item
-annotations); item 1 (Paddle) is code-done with founder steps above; the
-ONLY remaining Immediate code work is item 8 (goal-chip human labels,
-hardcoded pricing fallback, OG/Twitter tags + static robots.txt/sitemap.xml
-in `frontend/public/` — all URLs must use https://hanvoice.app). After item
-8, Immediate is empty → next session uses
+ROADMAP "Immediate" after session 5: ALL items done (2–8 + 13 shipped;
+item 1 Paddle is code-done + sandbox-verified, only the go-live founder
+steps remain, gated on Paddle's approval email). Next session uses
 `HanVoice_Fable5_Goal_Prompt_v1.4.xml` (go-to-market) or promotes Next
 Month items via v1.3.
 Analytics and Sentry are live-but-dormant: they activate when Joshua sets
@@ -207,11 +204,10 @@ session; implementation belongs to v1.3 sessions.
 The list below is kept only as original context for items the backlog
 references by number.
 
-Audit facts worth keeping: API cold start measured 5.9 s (scale-to-zero);
-robots.txt/sitemap.xml are swallowed by the SPA rewrite (soft-404 HTML); no
-OG tags; Talk goal chips render raw keys (`ordered_drink`); founder accounts
-still see "Get Premium"; landing page + auth + lesson player + talk loop all
-verified working live on a 390×844 viewport, console clean.
+Audit facts worth keeping: landing page + auth + lesson player + talk loop
+all verified working live on a 390×844 viewport, console clean. (The other
+session-1 findings — cold start, missing robots/sitemap/OG, raw goal-chip
+keys, founder "Get Premium" — are all fixed; see ROADMAP annotations.)
 
 ### Original notes (pre-audit)
 
