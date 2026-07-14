@@ -166,7 +166,7 @@ function PhraseDemo() {
             <path d="M12 18v3" />
           </svg>
         </Link>
-        <ScoreRing score={87} label="Your score" />
+        <ScoreRing score={87} label="Phrase match" />
       </div>
     </Card>
   );
@@ -175,8 +175,8 @@ function PhraseDemo() {
 const FEATURES: Array<{ hangul: string; title: string; body: string; speak: boolean }> = [
   {
     hangul: "발음",
-    title: "Your pronunciation, actually scored",
-    body: "Every phrase you speak gets a 0–100 score from professional speech assessment — you know you're understandable before you need to be.",
+    title: "Hear how close you are",
+    body: "Every recording gets instant 0–100 feedback on how closely it matches native Korean audio — so you know you're understandable before you need to be.",
     speak: true,
   },
   {
@@ -218,9 +218,9 @@ export function LandingPage() {
             Speak Korean before you land in Seoul.
           </h1>
           <p className="mx-auto max-w-lg text-ink-soft">
-            Learn to read Hangul and say the phrases your trip actually needs — with real
-            pronunciation scoring and an AI you can rehearse café, taxi, and market
-            conversations with, out loud.
+            Learn to read Hangul and say the phrases your trip actually needs — with
+            instant pronunciation feedback and an AI partner to rehearse café, taxi, and
+            market conversations with, out loud.
           </p>
           <div className="flex justify-center gap-3">
             <Link to="/signup">

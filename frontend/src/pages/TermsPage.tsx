@@ -21,11 +21,12 @@ export function TermsPage() {
       <section>
         <h2>2. The Service</h2>
         <p>
-          HanVoice provides Korean lessons, AI-scored pronunciation and handwriting
-          practice, and AI conversation practice. Scores, corrections, and conversation
-          replies are generated automatically by AI systems. They are learning aids, not
-          professional language assessment — they can be wrong, and no specific learning
-          outcome is guaranteed.
+          HanVoice provides Korean lessons, pronunciation and handwriting practice with
+          automated feedback, and AI conversation practice. Feedback, corrections, and
+          conversation replies are generated automatically. They are self-study learning
+          aids only, not a language assessment, qualification, or credential — they can
+          be wrong, no specific learning outcome is guaranteed, and they have no use or
+          effect outside the Service.
         </p>
       </section>
 
