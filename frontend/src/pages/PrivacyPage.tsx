@@ -51,9 +51,9 @@ export function PrivacyPage() {
             reports (stack traces, browser/OS info) so we can fix bugs.
           </li>
           <li>
-            <strong>Payment data</strong> — purchases are processed by Paddle.com as
-            merchant of record. Paddle collects your billing details; we never see your
-            card number. Paddle&rsquo;s own privacy policy applies to checkout.
+            <strong>Payment data</strong> — purchases are processed by Polar (polar.sh)
+            as merchant of record. Polar collects your billing details; we never see your
+            card number. Polar&rsquo;s own privacy policy applies to checkout.
           </li>
           <li>
             <strong>Emails</strong> — account emails (confirmation, password reset) are

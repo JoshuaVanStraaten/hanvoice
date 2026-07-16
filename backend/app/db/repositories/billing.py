@@ -35,7 +35,7 @@ async def record_founder_pass(
         "founder_pass_purchases",
         {
             "user_id": str(user_id),
-            "provider": "paddle",
+            "provider": "polar",
             "provider_payment_id": provider_payment_id,
             "amount_usd_cents": amount_usd_cents,
         },

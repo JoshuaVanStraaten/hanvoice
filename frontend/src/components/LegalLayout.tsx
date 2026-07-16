@@ -1,6 +1,6 @@
 /** Shared frame for the public legal pages (terms, privacy, refunds).
  * Static content, no data fetching — these pages must load even if the API
- * is down, and Paddle's site review reads them without JavaScript context. */
+ * is down, and payment-provider site reviews read them without JavaScript context. */
 
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";

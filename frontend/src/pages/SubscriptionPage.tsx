@@ -1,5 +1,5 @@
-/** Plan comparison + Paddle overlay checkout. Handles the ?checkout=success
- * redirect back from Paddle; entitlements come from the backend via useMe, so
+/** Plan comparison + Polar hosted checkout. Handles the ?checkout=success
+ * redirect back from Polar; entitlements come from the backend via useMe, so
  * a successful checkout shows up after the webhook lands. */
 
 import { Link, useSearchParams } from "react-router-dom";
@@ -27,7 +27,7 @@ export function SubscriptionPage() {
 
   function planCta(plan: Plan) {
     if (plan.id === currentPlanId) return null;
-    if (plan.id === "free") return null; // downgrades happen via Paddle, not here
+    if (plan.id === "free") return null; // downgrades happen via Polar, not here
     // A Founder Pass already covers Premium limits forever — showing either
     // buy button would be inviting a double charge.
     if (me.data?.has_founder_pass) return null;
@@ -58,7 +58,7 @@ export function SubscriptionPage() {
         <Card className="border-jade/40">
           <p className="text-sm" role="status">
             <span className="font-semibold text-jade">Payment received.</span> Your new
-            limits activate as soon as Paddle confirms — usually within seconds.
+            limits activate as soon as Polar confirms — usually within seconds.
           </p>
         </Card>
       )}

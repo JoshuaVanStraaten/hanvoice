@@ -50,14 +50,14 @@ class Settings(BaseSettings):
     # Sentry error monitoring (optional — no-op when empty)
     sentry_dsn: str = ""
 
-    # Paddle Billing (optional — billing routes 503 when unconfigured).
-    # The client token is public by design (it initializes Paddle.js in the
-    # browser); the webhook secret is the only sensitive value here.
-    paddle_env: str = "sandbox"  # "sandbox" | "production"
-    paddle_client_token: str = ""
-    paddle_webhook_secret: str = ""
-    paddle_price_premium: str = ""
-    paddle_price_founder: str = ""
+    # Polar billing (optional — billing routes 503 when unconfigured).
+    # Checkout sessions are created server-side with the org access token;
+    # the webhook secret verifies standard-webhooks signatures.
+    polar_access_token: str = ""
+    polar_webhook_secret: str = ""
+    polar_product_premium: str = ""
+    polar_product_founder: str = ""
+    polar_api_base: str = "https://api.polar.sh"
 
     @property
     def cors_origin_list(self) -> list[str]:

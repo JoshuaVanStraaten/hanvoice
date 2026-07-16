@@ -48,9 +48,9 @@ export function TermsPage() {
             as described on the <Link to="/#pricing" className="text-taegeuk-blue">pricing page</Link>.
           </li>
           <li>
-            Purchases are processed by Paddle.com, our merchant of record. Your purchase is
-            also subject to Paddle&rsquo;s checkout terms, and Paddle handles applicable
-            taxes, invoices, and payment data.
+            Purchases are processed by Polar (polar.sh), our merchant of record. Your
+            purchase is also subject to Polar&rsquo;s buyer terms, and Polar handles
+            applicable taxes, invoices, and payment data.
           </li>
           <li>
             Subscriptions renew monthly until cancelled. You can cancel at any time and

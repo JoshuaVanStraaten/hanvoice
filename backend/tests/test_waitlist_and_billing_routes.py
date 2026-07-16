@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 import json
@@ -15,9 +16,12 @@ from app.services.billing import BillingService
 from tests.conftest import SUPABASE_REST
 from tests.factories import TEST_USER_ID, auth_headers
 
-WEBHOOK_SECRET = "pdl_ntfset_testsecret"
-PRICE_FOUNDER = "pri_founder_test"
-PRICE_PREMIUM = "pri_premium_test"
+# whsec_ + valid base64 so both key interpretations (literal string vs
+# decoded standard-webhooks key) exist — see BillingService._candidate_keys.
+WEBHOOK_SECRET = "whsec_dGVzdC1zaWduaW5nLWtleS0zMi1ieXRlcy1sb25nISE="
+PRODUCT_FOUNDER = "prod-founder-test"
+PRODUCT_PREMIUM = "prod-premium-test"
+POLAR_API = "http://polar.test"
 
 
 # --- Waitlist -----------------------------------------------------------------
@@ -63,7 +67,7 @@ def test_waitlist_rate_limited_eventually(client):
     assert 429 in statuses
 
 
-# --- Billing (Paddle) -----------------------------------------------------------
+# --- Billing (Polar) -----------------------------------------------------------
 
 
 def test_checkout_unconfigured_is_503(client):
@@ -84,102 +88,147 @@ def configured_service() -> BillingService:
             supabase_url="http://supabase.test",
             supabase_service_role_key="k",
             supabase_jwt_secret="s",
-            paddle_env="sandbox",
-            paddle_client_token="test_client_token",
-            paddle_webhook_secret=WEBHOOK_SECRET,
-            paddle_price_founder=PRICE_FOUNDER,
-            paddle_price_premium=PRICE_PREMIUM,
+            polar_access_token="polar_oat_test",
+            polar_webhook_secret=WEBHOOK_SECRET,
+            polar_product_founder=PRODUCT_FOUNDER,
+            polar_product_premium=PRODUCT_PREMIUM,
+            polar_api_base=POLAR_API,
         )
     )
 
 
-def sign(payload: bytes, timestamp: int | None = None) -> str:
+MSG_ID = "wh_msg_test_1"
+
+
+def sign(
+    payload: bytes,
+    timestamp: int | None = None,
+    key: bytes = WEBHOOK_SECRET.encode(),
+) -> tuple[str, str, str]:
+    """Return (webhook-id, webhook-timestamp, webhook-signature) headers."""
     ts = int(time.time()) if timestamp is None else timestamp
-    digest = hmac.new(
-        WEBHOOK_SECRET.encode(), f"{ts}:{payload.decode()}".encode(), hashlib.sha256
-    ).hexdigest()
-    return f"ts={ts};h1={digest}"
+    signed = f"{MSG_ID}.{ts}.".encode() + payload
+    digest = base64.b64encode(hmac.new(key, signed, hashlib.sha256).digest()).decode()
+    return MSG_ID, str(ts), f"v1,{digest}"
 
 
-def paddle_event(event_type: str, data: dict[str, Any]) -> bytes:
+def polar_event(event_type: str, data: dict[str, Any]) -> bytes:
     return json.dumps(
         {
-            "event_id": "evt_01hv8x2k9tq3",
-            "event_type": event_type,
-            "occurred_at": "2026-07-12T10:00:00.000000Z",
-            "notification_id": "ntf_01hv8x2kabc",
+            "type": event_type,
+            "timestamp": "2026-07-16T10:00:00.000000Z",
             "data": data,
         }
     ).encode()
 
 
-def founder_transaction(price_id: str = PRICE_FOUNDER) -> bytes:
-    return paddle_event(
-        "transaction.completed",
+def founder_order(product_id: str = PRODUCT_FOUNDER) -> bytes:
+    return polar_event(
+        "order.paid",
         {
-            "id": "txn_01hv8xfounder",
-            "status": "completed",
-            "custom_data": {"user_id": TEST_USER_ID, "plan": "founder"},
-            "items": [{"price": {"id": price_id}, "quantity": 1}],
-            "details": {"totals": {"total": "6900", "currency_code": "USD"}},
+            "id": "order-founder-test",
+            "paid": True,
+            "total_amount": 6900,
+            "currency": "usd",
+            "product_id": product_id,
             "subscription_id": None,
+            "customer_id": "cust-test",
+            "metadata": {"user_id": TEST_USER_ID, "plan": "founder"},
         },
     )
 
 
 def premium_subscription(
-    status: str = "active", scheduled_change: dict[str, Any] | None = None
+    status: str = "active", cancel_at_period_end: bool = False
 ) -> bytes:
-    return paddle_event(
+    return polar_event(
         "subscription.updated",
         {
-            "id": "sub_01hv8xpremium",
+            "id": "sub-premium-test",
             "status": status,
-            "customer_id": "ctm_01hv8x9",
-            "custom_data": {"user_id": TEST_USER_ID, "plan": "premium"},
-            "items": [{"price": {"id": PRICE_PREMIUM}, "quantity": 1}],
-            "current_billing_period": {
-                "starts_at": "2026-07-12T10:00:00Z",
-                "ends_at": "2026-08-12T10:00:00Z",
-            },
-            "scheduled_change": scheduled_change,
+            "customer_id": "cust-test",
+            "product_id": PRODUCT_PREMIUM,
+            "metadata": {"user_id": TEST_USER_ID, "plan": "premium"},
+            "current_period_start": "2026-07-16T10:00:00Z",
+            "current_period_end": "2026-08-16T10:00:00Z",
+            "cancel_at_period_end": cancel_at_period_end,
         },
     )
 
 
-def test_checkout_config_serves_paddle_overlay_settings():
+def verify(service: BillingService, payload: bytes, **kwargs: Any) -> dict[str, Any]:
+    msg_id, ts, sig = sign(payload, **kwargs)
+    return service.verify_webhook(payload, msg_id, ts, sig)
+
+
+@respx.mock
+async def test_checkout_creates_polar_session():
     service = configured_service()
     from uuid import UUID
 
-    config = service.checkout_config(
+    create = respx.mock.post(f"{POLAR_API}/v1/checkouts/").mock(
+        return_value=httpx.Response(
+            201, json={"id": "co_test", "url": "https://polar.sh/checkout/co_test"}
+        )
+    )
+    session = await service.create_checkout(
         UUID(TEST_USER_ID), "learner@example.com", "founder"
     )
-    assert config.environment == "sandbox"
-    assert config.client_token == "test_client_token"
-    assert config.price_id == PRICE_FOUNDER
-    assert config.custom_data == {"user_id": TEST_USER_ID, "plan": "founder"}
-    assert config.email == "learner@example.com"
+    assert session.url == "https://polar.sh/checkout/co_test"
+    sent = json.loads(create.calls[0].request.content)
+    assert sent["products"] == [PRODUCT_FOUNDER]
+    assert sent["metadata"] == {"user_id": TEST_USER_ID, "plan": "founder"}
+    assert sent["customer_email"] == "learner@example.com"
+    assert sent["external_customer_id"] == TEST_USER_ID
+    assert sent["success_url"].endswith("/subscription?checkout=success")
+    auth = create.calls[0].request.headers["authorization"]
+    assert auth == "Bearer polar_oat_test"
+
+
+@respx.mock
+async def test_checkout_provider_error_is_503():
+    service = configured_service()
+    from uuid import UUID
+
+    respx.mock.post(f"{POLAR_API}/v1/checkouts/").mock(
+        return_value=httpx.Response(422, json={"detail": "nope"})
+    )
+    from app.core.errors import ServiceUnavailableError
+
+    with pytest.raises(ServiceUnavailableError):
+        await service.create_checkout(UUID(TEST_USER_ID), None, "premium")
 
 
 def test_webhook_rejects_bad_signature():
     service = configured_service()
+    payload = founder_order()
     with pytest.raises(BadRequestError):
-        service.verify_webhook(founder_transaction(), "ts=1;h1=deadbeef")
+        service.verify_webhook(payload, MSG_ID, str(int(time.time())), "v1,deadbeef")
 
 
 def test_webhook_rejects_stale_timestamp():
     service = configured_service()
-    payload = founder_transaction()
+    payload = founder_order()
     stale = int(time.time()) - 3600
+    msg_id, ts, sig = sign(payload, timestamp=stale)
     with pytest.raises(BadRequestError):
-        service.verify_webhook(payload, sign(payload, timestamp=stale))
+        service.verify_webhook(payload, msg_id, ts, sig)
+
+
+def test_webhook_accepts_spec_decoded_key():
+    # The standard-webhooks spec signs with base64-decode of the part after
+    # whsec_; Polar's docs sign with the literal secret. Both must verify.
+    service = configured_service()
+    payload = founder_order()
+    decoded = base64.b64decode(WEBHOOK_SECRET.removeprefix("whsec_"))
+    event = verify(service, payload, key=decoded)
+    assert event["type"] == "order.paid"
 
 
 @respx.mock
-async def test_founder_transaction_records_pass():
+async def test_founder_order_records_pass():
     service = configured_service()
-    payload = founder_transaction()
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, founder_order())
 
     insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])
@@ -190,16 +239,15 @@ async def test_founder_transaction_records_pass():
 
     sent = json.loads(insert.calls[0].request.content)
     assert sent["user_id"] == TEST_USER_ID
-    assert sent["provider_payment_id"] == "txn_01hv8xfounder"
-    assert sent["provider"] == "paddle"
+    assert sent["provider_payment_id"] == "order-founder-test"
+    assert sent["provider"] == "polar"
     assert sent["amount_usd_cents"] == 6900
 
 
 @respx.mock
 async def test_founder_webhook_retry_is_idempotent():
     service = configured_service()
-    payload = founder_transaction()
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, founder_order())
 
     respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
         return_value=httpx.Response(409, json={"code": "23505"})
@@ -210,12 +258,11 @@ async def test_founder_webhook_retry_is_idempotent():
 
 
 @respx.mock
-async def test_founder_grant_requires_matching_price():
-    # custom_data comes from the client-opened checkout; a tampered plan label
-    # must not grant a founder pass for a premium-priced purchase.
+async def test_founder_grant_requires_matching_product():
+    # The purchased product stays the source of truth over the plan label —
+    # a founder-labeled order for the premium product must not grant a pass.
     service = configured_service()
-    payload = founder_transaction(price_id=PRICE_PREMIUM)
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, founder_order(product_id=PRODUCT_PREMIUM))
 
     insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])
@@ -228,20 +275,22 @@ async def test_founder_grant_requires_matching_price():
 
 
 @respx.mock
-async def test_subscription_transaction_is_left_to_subscription_events():
+async def test_subscription_order_is_left_to_subscription_events():
     service = configured_service()
-    payload = paddle_event(
-        "transaction.completed",
+    payload = polar_event(
+        "order.paid",
         {
-            "id": "txn_01hv8xsubpay",
-            "status": "completed",
-            "custom_data": {"user_id": TEST_USER_ID, "plan": "premium"},
-            "items": [{"price": {"id": PRICE_PREMIUM}, "quantity": 1}],
-            "details": {"totals": {"total": "1499", "currency_code": "USD"}},
-            "subscription_id": "sub_01hv8xpremium",
+            "id": "order-sub-renewal",
+            "paid": True,
+            "total_amount": 1499,
+            "currency": "usd",
+            "product_id": PRODUCT_PREMIUM,
+            "subscription_id": "sub-premium-test",
+            "customer_id": "cust-test",
+            "metadata": {"user_id": TEST_USER_ID, "plan": "premium"},
         },
     )
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, payload)
 
     insert = respx.mock.post(f"{SUPABASE_REST}/founder_pass_purchases").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])
@@ -256,8 +305,7 @@ async def test_subscription_transaction_is_left_to_subscription_events():
 @respx.mock
 async def test_subscription_update_upserts_row():
     service = configured_service()
-    payload = premium_subscription()
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, premium_subscription())
 
     upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])
@@ -267,22 +315,19 @@ async def test_subscription_update_upserts_row():
         await service.handle_event(db, event)
 
     sent = json.loads(upsert.calls[0].request.content)
-    assert sent["provider_subscription_id"] == "sub_01hv8xpremium"
-    assert sent["provider"] == "paddle"
+    assert sent["provider_subscription_id"] == "sub-premium-test"
+    assert sent["provider"] == "polar"
     assert sent["status"] == "active"
     assert sent["plan_id"] == "premium"
     assert sent["user_id"] == TEST_USER_ID
     assert sent["cancel_at_period_end"] is False
-    assert sent["current_period_end"] == "2026-08-12T10:00:00Z"
+    assert sent["current_period_end"] == "2026-08-16T10:00:00Z"
 
 
 @respx.mock
-async def test_subscription_scheduled_cancel_sets_period_end_flag():
+async def test_subscription_cancel_at_period_end_flag():
     service = configured_service()
-    payload = premium_subscription(
-        scheduled_change={"action": "cancel", "effective_at": "2026-08-12T10:00:00Z"}
-    )
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, premium_subscription(cancel_at_period_end=True))
 
     upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])
@@ -297,12 +342,11 @@ async def test_subscription_scheduled_cancel_sets_period_end_flag():
 
 
 @respx.mock
-async def test_subscription_paused_maps_to_canceled():
-    # "paused" is a Paddle status our schema doesn't know; a paused sub must
-    # not keep premium entitlements.
+async def test_subscription_unknown_status_maps_to_canceled():
+    # "revoked"/"unpaid"/"incomplete" are Polar statuses our schema doesn't
+    # store; none of them may keep premium entitlements.
     service = configured_service()
-    payload = premium_subscription(status="paused")
-    event = service.verify_webhook(payload, sign(payload))
+    event = verify(service, premium_subscription(status="revoked"))
 
     upsert = respx.mock.post(f"{SUPABASE_REST}/subscriptions").mock(
         return_value=httpx.Response(201, json=[{"id": 1}])

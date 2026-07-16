@@ -42,9 +42,10 @@ export function RefundsPage() {
           <a href="mailto:hanvoice@joshuavanstraaten.com" className="text-taegeuk-blue">
             hanvoice@joshuavanstraaten.com
           </a>{" "}
-          from your account email, or use the link in your Paddle receipt. Purchases are
-          processed by Paddle.com as merchant of record, so approved refunds are issued by
-          Paddle to your original payment method, usually within 5–10 business days.
+          from your account email, or use the link in your Polar receipt. Purchases are
+          processed by Polar (polar.sh) as merchant of record, so approved refunds are
+          issued by Polar to your original payment method, usually within 5–10 business
+          days.
         </p>
       </section>
 

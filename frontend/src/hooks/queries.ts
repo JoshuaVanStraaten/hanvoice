@@ -4,12 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { track } from "../lib/analytics";
 import { apiGet, apiPatch, apiPost } from "../lib/api";
-import { openPaddleCheckout } from "../lib/paddle";
 import { supabase } from "../lib/supabase";
 import type {
   Plan,
   BlockCompleteResponse,
-  CheckoutConfig,
+  CheckoutSession,
   LessonDetail,
   LessonSummary,
   Me,
@@ -108,13 +107,13 @@ export function useUpdateProfile() {
   });
 }
 
-/** Fetches Paddle config from the backend, then opens the overlay checkout.
+/** Creates a Polar checkout session server-side, then redirects to it.
  * Entitlements land via webhook; the success redirect refetches useMe. */
 export function useCheckout() {
   return useMutation({
     mutationFn: async (plan: "premium" | "founder") => {
-      const config = await apiPost<CheckoutConfig>("/billing/checkout", { plan });
-      await openPaddleCheckout(config);
+      const session = await apiPost<CheckoutSession>("/billing/checkout", { plan });
+      window.location.assign(session.url);
     },
   });
 }

@@ -90,7 +90,7 @@ def subscription_row(user_id: str = TEST_USER_ID, **overrides: Any) -> dict[str,
         "user_id": user_id,
         "plan_id": "premium",
         "status": "active",
-        "provider": "paddle",
+        "provider": "polar",
         "provider_subscription_id": f"sub_{uuid.uuid4().hex[:12]}",
         "cancel_at_period_end": False,
         **overrides,
@@ -200,7 +200,7 @@ def founder_pass_row(user_id: str = TEST_USER_ID) -> dict[str, Any]:
     return {
         "id": 1,
         "user_id": user_id,
-        "provider": "paddle",
+        "provider": "polar",
         "provider_payment_id": "pi_test",
         "amount_usd_cents": 6900,
     }

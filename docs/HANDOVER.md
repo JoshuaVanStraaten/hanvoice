@@ -1,6 +1,8 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-12 (session 7) · **Branch:** `main` · **Status: DEPLOYED; CONTENT ENGINE BUILT + GTM COPY LIVE.** Session 7 (v1.5) shipped ROADMAP Immediate 18–19 and the content machine. **(a) Copy live on hanvoice.app** (deployed `vercel deploy --prod`, dpl_C2JaadeFTKcyzjjAEfu2sfcvcxES, strings verified in served HTML + bundle): hero/features in `frontend/src/pages/LandingPage.tsx` swapped to GTM §2 trip-prep copy ("Speak Korean before you land in Seoul"), waitlist section now offers the free **Seoul Survival Phrase Card** + launch discount (GTM §4), `frontend/index.html` meta/OG/Twitter aligned. eslint/tsc/42 tests green. **(b) `docs/CONTENT_ENGINE.md`**: 3 formats kept (tourist-phrase TikTok demo, pronunciation tip/challenge TikTok, Reddit trip-value post — K-drama/K-pop/slang/daily killed as wrong-segment), copy-paste LLM prompt templates per format, ~5 h/week schedule (Sunday 3 h batch), funnel table (all build steps ✅; remaining ⚠ are founder actions from GTM §5), Sunday 15-min KPI ritual + review log. **(c) `docs/content/week-01/`**: the phrase card (`seoul-survival-phrase-card.html` — open in browser → print to PDF; all phrases verbatim from `supabase/seed.sql`, nothing invented) + 5 ready pieces mapped to GTM days 3–8 (3 TikTok scripts, 1 r/koreatravel post, 1 waitlist email) — see its README for posting order. **No engineering left in Immediate. Open threads: (1) founder runs the 14-day play Day 0/1 (GTM §5): fresh-signup funnel check, print card PDF, create TikTok account; (2) Paddle go-live steps when the approval email arrives (Paddle section below; until then every money-ask is the reservation fallback, GTM §5); (3) weekly loop = produce/post from CONTENT_ENGINE.md, v1.3 build sessions only for Next-Month roadmap items.**
+**Updated:** 2026-07-16 (session 8) · **Branch:** `main` · **Status: POLAR BILLING — ACCOUNT LIVE + CODE DONE; DEPLOY + E2E PENDING (see Polar section).** Session 8: Paddle rejected twice → Polar chosen (`_os/DECISIONS.md`), account created/KYC'd/approved same day, products + webhook + token provisioned via API, full billing rewrite shipped (backend 124 tests / frontend 42 tests green). Next founder/session actions are the 4 numbered steps in the Polar section.
+
+**Previous status (session 7):** DEPLOYED; CONTENT ENGINE BUILT + GTM COPY LIVE. Session 7 (v1.5) shipped ROADMAP Immediate 18–19 and the content machine. **(a) Copy live on hanvoice.app** (deployed `vercel deploy --prod`, dpl_C2JaadeFTKcyzjjAEfu2sfcvcxES, strings verified in served HTML + bundle): hero/features in `frontend/src/pages/LandingPage.tsx` swapped to GTM §2 trip-prep copy ("Speak Korean before you land in Seoul"), waitlist section now offers the free **Seoul Survival Phrase Card** + launch discount (GTM §4), `frontend/index.html` meta/OG/Twitter aligned. eslint/tsc/42 tests green. **(b) `docs/CONTENT_ENGINE.md`**: 3 formats kept (tourist-phrase TikTok demo, pronunciation tip/challenge TikTok, Reddit trip-value post — K-drama/K-pop/slang/daily killed as wrong-segment), copy-paste LLM prompt templates per format, ~5 h/week schedule (Sunday 3 h batch), funnel table (all build steps ✅; remaining ⚠ are founder actions from GTM §5), Sunday 15-min KPI ritual + review log. **(c) `docs/content/week-01/`**: the phrase card (`seoul-survival-phrase-card.html` — open in browser → print to PDF; all phrases verbatim from `supabase/seed.sql`, nothing invented) + 5 ready pieces mapped to GTM days 3–8 (3 TikTok scripts, 1 r/koreatravel post, 1 waitlist email) — see its README for posting order. **No engineering left in Immediate. Open threads: (1) founder runs the 14-day play Day 0/1 (GTM §5): fresh-signup funnel check, print card PDF, create TikTok account; (2) Paddle go-live steps when the approval email arrives (Paddle section below; until then every money-ask is the reservation fallback, GTM §5); (3) weekly loop = produce/post from CONTENT_ENGINE.md, v1.3 build sessions only for Next-Month roadmap items.**
 
 ## What exists
 
@@ -74,7 +76,52 @@ tab still works (canvas extracted to `HangulCanvas`).
 - User's other Supabase project **pettlo-poc was paused** to free the free-tier
   slot — don't unpause/delete without asking.
 
-## Paddle billing: CODE DONE (session 4) — founder steps remain
+## Polar billing: LIVE ACCOUNT + CODE DONE (2026-07-16) — deploy + E2E remain
+
+**Paddle is dead** — rejected twice (AI-assessment AUP), even after the copy
+reframe. Decision + full rationale: `_os/DECISIONS.md` 2026-07-16. **Polar
+(polar.sh) account is APPROVED and LIVE** (same-day: signup, org `hanvoice`
+id `9e5bb4d5-f004-4ce0-b352-24f5a5e1cee7`, KYC via SA driver's license,
+Capitec payout account via SWIFT `CABLZAJJ`). Products created via API:
+Founder Pass $69 one-time (`ff50af3e-…`, price `33f416bd-…`), Premium
+$14.99/mo (`4076c327-…`, price `8f3bafdb-…`). Webhook endpoint
+`be4a23aa-…` → `https://hanvoice-api.fly.dev/api/billing/webhook`
+(order.paid/refunded + subscription.* events). Org token
+`hanvoice-backend` (expires 2027-07-16). All five `POLAR_*` values in
+`backend/.env`; live checkout verified rendering with real card fields.
+
+**Code (plan: `docs/superpowers/plans/2026-07-16-polar-billing-rewrite.md`):**
+backend creates the checkout session server-side (`POST /v1/checkouts/`,
+metadata `{user_id, plan}` is server-set = trusted; product id still
+cross-checked in the webhook), returns `{url}`; frontend redirects
+(`lib/paddle.ts` deleted, `@paddle/paddle-js` uninstalled). Webhook is
+**standard-webhooks** (headers `webhook-id/-timestamp/-signature`, signed
+`{id}.{ts}.{body}`, HMAC-SHA256 base64, `v1,` prefix, 5-min tolerance —
+NOT Paddle's `ts;h1`). Signature verify accepts both key interpretations
+(literal secret string per Polar docs, base64-decoded per spec). Polar
+statuses kept: trialing/active/past_due/canceled; anything else
+(incomplete/unpaid/revoked) → canceled. 124 backend tests, ruff + strict
+mypy clean; eslint + tsc + 42 frontend tests green.
+
+**Remaining (in order):**
+1. `flyctl deploy --remote-only` from `backend/` — POLAR_* secrets are
+   already STAGED on Fly (PADDLE_* staged-unset); they land with this
+   deploy. (flyctl was permission-blocked in the setup session.)
+2. `vercel deploy --prod` from `frontend/` (after the API, so the response
+   shape matches; unregister the service worker before verifying).
+3. E2E without spending: `POST /v1/discounts` (100% off, max 1 redemption)
+   with the org token, fresh signup on hanvoice.app, buy Founder Pass with
+   the code, assert webhook 200 in Polar dashboard + `founder_pass_purchases`
+   row + buy buttons hidden; archive the discount.
+4. Flip GTM copy from reservation-fallback to the real $69 money-ask
+   (GTM §5 gate is now OPEN).
+
+**Polar gotchas:** dashboard form buttons don't submit on click — press
+Enter inside a form field instead (token + product forms both). Org
+settings country is still unset (harmless; payout account carries the
+banking country). The old sandbox Paddle account still exists — ignore it.
+
+## OLD Paddle notes (dead — kept one session for reference)
 
 **Architecture (`f4bd0d9`):** client-opened Paddle.js **overlay checkout** +
 server-verified webhook. `POST /billing/checkout` (authed) returns
