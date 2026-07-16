@@ -103,18 +103,19 @@ statuses kept: trialing/active/past_due/canceled; anything else
 (incomplete/unpaid/revoked) → canceled. 124 backend tests, ruff + strict
 mypy clean; eslint + tsc + 42 frontend tests green.
 
-**Remaining (in order):**
-1. `flyctl deploy --remote-only` from `backend/` — POLAR_* secrets are
-   already STAGED on Fly (PADDLE_* staged-unset); they land with this
-   deploy. (flyctl was permission-blocked in the setup session.)
-2. `vercel deploy --prod` from `frontend/` (after the API, so the response
-   shape matches; unregister the service worker before verifying).
-3. E2E without spending: `POST /v1/discounts` (100% off, max 1 redemption)
-   with the org token, fresh signup on hanvoice.app, buy Founder Pass with
-   the code, assert webhook 200 in Polar dashboard + `founder_pass_purchases`
-   row + buy buttons hidden; archive the discount.
-4. Flip GTM copy from reservation-fallback to the real $69 money-ask
-   (GTM §5 gate is now OPEN).
+**DEPLOYED + E2E PASSED (2026-07-16, same session):** Fly deployed with
+POLAR_* secrets (PADDLE_* removed); Vercel deployed + aliased (live bundle
+has zero Paddle references). Production E2E: fresh account → app buy
+button → backend-created Polar checkout → 100% discount → $0 purchase →
+**webhook signature-verified and processed on the first real delivery →
+`founder_pass_purchases` id=3 (provider=polar) → founder UI live.** The
+E2E discount was deleted afterwards. Second E2E account
+`joshuavanstraaten100+polar-e2e@gmail.com` / `polar-e2e-test-1234` holds a
+founder pass (like the original test account). Premium subscription path
+is unit-tested but not click-tested (same as Paddle era) — optional.
+
+**Remaining: flip GTM copy from reservation-fallback to the real $69
+money-ask — GTM §5's gate is OPEN. Billing is LIVE.**
 
 **Polar gotchas:** dashboard form buttons don't submit on click — press
 Enter inside a form field instead (token + product forms both). Org

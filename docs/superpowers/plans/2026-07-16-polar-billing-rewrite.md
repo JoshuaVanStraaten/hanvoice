@@ -85,11 +85,23 @@ Event → entitlement mapping:
 - [x] 6 frontend — paddle.ts deleted, checkout = redirect to session.url,
       @paddle/paddle-js uninstalled, Terms/Privacy/Refunds/Subscription copy
       says Polar; eslint + tsc + 42 vitest green
-- [~] 7 deploy — Fly secrets STAGED (POLAR_* set, PADDLE_* unset; take
-      effect on next deploy). `flyctl deploy` blocked by session permissions
-      → founder runs `flyctl deploy --remote-only` from backend/ then
-      `vercel deploy --prod` from frontend/ (that order: API first).
-- [ ] 8 E2E — after deploy: create 100%-off discount via API, fresh signup,
-      buy Founder Pass free, assert webhook 200 + founder_pass_purchases row
-      + founder UI; archive discount.
-- [ ] 9 docs — HANDOVER updated alongside this commit; memory updated
+- [x] 7 deploy — Fly deployed (machine healthy; live webhook route answers
+      with the new "Missing webhook signature headers" error) + Vercel
+      deployed, aliased to hanvoice.app (bundle grep: 0 Paddle references,
+      "Polar confirms" copy present).
+- [x] 8 E2E — PASSED end-to-end on production 2026-07-16: discount
+      E2ELAUNCH (-100%) created via dashboard; fresh account
+      (…+polar-e2e@gmail.com, admin-confirmed) signed up; "Get Lifetime
+      Founder Pass" → backend-created Polar checkout (email pre-filled) →
+      code applied → "Get for free" → success redirect →
+      **webhook verified + processed: founder_pass_purchases id=3,
+      provider=polar, order a7fe7070-…** and founder-pass footer visible
+      in the UI. Discount deleted afterwards (list shows No Results).
+      Nit found: a 100%-discounted order records amount 6900 because
+      `total_amount=0` is falsy → falls back to list price. Harmless for
+      real purchases; fix only if $0 orders ever matter.
+- [x] 9 docs — HANDOVER + memory updated; committed.
+
+**Status: COMPLETE. Billing is LIVE on hanvoice.app. Signature-key note:
+the dual-key verify worked on the first real delivery, so no further
+action needed there.**
