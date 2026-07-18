@@ -146,3 +146,21 @@ else verified: 13 lessons, 5 scenarios, $69 lifetime, SEOUL49 = $49 first
 이거 주세요 (i-geo ju-se-yo) + pointing = dinner ordered. The whole
 restaurant game is one pattern. Free phrase card in bio. #koreatravel
 #learnkorean #koreanfood #seoul
+
+## FACE-FREE REMAKES of #06/#07 (built 2026-07-18 — founder opted out of filming)
+
+Both videos rebuilt through the content pipeline, zero face. #06 =
+`video/tiktok-06-english-enough.mp4` (real 77 score on 한국어 조금 해요 — the
+imperfect score IS the message; landing + phrase-card b-roll). #07 =
+`video/tiktok-07-launch.mp4` (product montage → live checkout showing
+SEOUL49 → $49, founder email blurred; no build-duration claim — the "6
+months" line was cut as untrue).
+
+**#06 caption:** You don't need Korean for Seoul. But 안녕하세요 + 감사합니다 +
+주세요 turn service-Korean into smiles. 10 phrases, one weekend. Free card
+in bio. #koreatravel #seoul #learnkorean #traveltips
+
+**#07 caption:** HanVoice is live. Speak Korean before you land in Seoul —
+real pronunciation scoring + AI conversation rehearsal. Founder pass $69
+for life; first 25 use SEOUL49 for $49. #koreatravel #learnkorean
+#buildinpublic #seoul
