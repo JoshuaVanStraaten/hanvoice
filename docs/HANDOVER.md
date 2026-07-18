@@ -115,10 +115,19 @@ GTM's IG SKIP stands. Founder also greenlit exploring **Google OAuth
 signup** (Supabase Google provider + landing button; needs founder for
 Google Cloud OAuth credentials) — queued behind channels.
 
-**NEXT ACTION (first thing, next session):** if founder has created the
-TikTok account (phone, 5 min): log in via agent-browser (Gmail MCP reads
-the code), save state, upload video #1, get one-time first-post go. Else:
-fire the 14 directory submissions on approval, or batch videos #05-#07.
+**CHANNEL LIVE: https://www.tiktok.com/@_hanvoice** (founder-created on
+phone, 2026-07-18). **Founder chose to operate TikTok manually** (profile
+edits + daily uploads himself, packet given: Business account -> website
+field, video files reachable via OneDrive mobile, captions in the script
+files). Claude's login attempt from this machine stalled at TikTok's
+login wall too - don't retry browser login unless founder hands the
+account back.
+
+**NEXT ACTION (first thing, next session):** batch videos #05-#07 through
+the content pipeline so the founder's daily queue never runs dry (#05
+restaurant 2-words [SCREEN] is fully automatable; #06/#07 need founder
+face - prep everything else). Then: directory submissions on approval,
+Google OAuth signup (needs founder for Google Cloud credentials).
 
 ## Session 9 (2026-07-18) — launch execution
 
