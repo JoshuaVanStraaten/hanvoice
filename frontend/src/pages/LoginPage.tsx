@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
-import { AuthField, AuthLayout } from "../components/AuthLayout";
+import { AuthField, AuthLayout, GoogleAuthButton } from "../components/AuthLayout";
 import { Button } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
-  const { session, signIn } = useAuth();
+  const { session, signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? "/home";
@@ -34,6 +34,7 @@ export function LoginPage() {
 
   return (
     <AuthLayout title="Log in">
+      <GoogleAuthButton signInWithGoogle={signInWithGoogle} onError={setError} />
       <form onSubmit={(event) => void submit(event)} className="space-y-4">
         <AuthField
           id="email"

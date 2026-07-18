@@ -15,6 +15,8 @@ interface AuthContextValue {
   /** True until the initial session restore has finished. */
   loading: boolean;
   signIn(email: string, password: string): Promise<void>;
+  /** Redirects to Google; the session lands via onAuthStateChange on return. */
+  signInWithGoogle(): Promise<void>;
   signUp(email: string, password: string, displayName: string): Promise<void>;
   signOut(): Promise<void>;
   resetPassword(email: string): Promise<void>;
@@ -46,6 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw new Error(error.message);
       track("signed_in");
+    },
+    async signInWithGoogle() {
+      track("google_signin_started");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/home` },
+      });
+      if (error) throw new Error(error.message);
     },
     async signUp(email, password, displayName) {
       const { error } = await supabase.auth.signUp({

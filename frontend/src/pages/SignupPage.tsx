@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
-import { AuthField, AuthLayout } from "../components/AuthLayout";
+import { AuthField, AuthLayout, GoogleAuthButton } from "../components/AuthLayout";
 import { Button } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import { track } from "../lib/analytics";
 import { supabase } from "../lib/supabase";
 
 export function SignupPage() {
-  const { session, signUp } = useAuth();
+  const { session, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [displayName, setDisplayName] = useState("");
@@ -58,6 +58,7 @@ export function SignupPage() {
 
   return (
     <AuthLayout title="Create your account">
+      <GoogleAuthButton signInWithGoogle={signInWithGoogle} onError={setError} />
       <form onSubmit={(event) => void submit(event)} className="space-y-4">
         <AuthField
           id="display-name"
