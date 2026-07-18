@@ -123,11 +123,41 @@ files). Claude's login attempt from this machine stalled at TikTok's
 login wall too - don't retry browser login unless founder hands the
 account back.
 
-**NEXT ACTION (first thing, next session):** batch videos #05-#07 through
-the content pipeline so the founder's daily queue never runs dry (#05
-restaurant 2-words [SCREEN] is fully automatable; #06/#07 need founder
-face - prep everything else). Then: directory submissions on approval,
-Google OAuth signup (needs founder for Google Cloud credentials).
+**Late session 10 (continued): the full 7-day queue is BUILT.** #05
+(restaurant 2-words, real 99 + bibimbap turn, voice Brian) `d03f04e`;
+**#06/#07 rebuilt FACE-FREE** per founder ("I won't show my actual face")
+`6ee5e29`: #06 = real 77 on 한국어 조금 해요 (the imperfect score is the
+message) + landing/card b-roll, voice Emma; #07 = product montage ending
+on the LIVE checkout applying SEOUL49 -> $49 on camera (founder email
+blurred; the "6 months building" line was cut as untrue). Captions for
+all appended to tiktok-queue-7day.md. Founder posts these manually to
+@_hanvoice, one per day.
+
+**Directory submissions attempted:** Future Tools form fully filled but
+gated by Cloudflare Turnstile which rejects the automated browser (clicks
+don't check it). Expect the same on most directory forms ->
+**directories are founder-browser tasks** (~5 min each, everything
+paste-ready in directory-submission-kit.md). Same bot-wall family as
+TikTok/Reddit. Do not burn sessions on captcha'd forms.
+
+**Google OAuth signup SHIPPED (code) `959e43f`, NOT deployed:**
+signInWithGoogle in AuthContext, GoogleAuthButton on login+signup,
+handle_new_user() migration (applied to LIVE db) coalesces
+full_name/name for OAuth users. config.toml [auth.external.google]
+prepared, disabled. **Founder's 5-min task to activate:** Google Cloud
+console -> OAuth consent screen (External, publish) -> Credentials ->
+OAuth client ID (Web) with redirect URI
+`https://mxibibkcaarltsbkomvm.supabase.co/auth/v1/callback` -> paste
+client id + secret into Supabase dashboard (Auth -> Providers -> Google
+-> Enable) OR hand them over for a config push. THEN deploy frontend
+(`vercel deploy --prod --yes`) — do not deploy before, the button 400s.
+
+**NEXT ACTION (first thing, next session):** ask founder for the Google
+OAuth client id/secret (5-min console task above); on receipt: enable
+provider, deploy frontend, verify Continue-with-Google end-to-end
+(founder does one real Google login). Meanwhile: founder posts daily from
+the built queue; watch waitlist + PostHog for the first real signups and
+send the launch email when waitlist > 0.
 
 ## Session 9 (2026-07-18) — launch execution
 
