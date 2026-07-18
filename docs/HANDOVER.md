@@ -1,7 +1,107 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-18 (session 9, v1.6 launch/GTM) · **Branch:** `main` ·
-**Status: MONEY-ASK LIVE ON hanvoice.app; ALL LAUNCH ASSETS READY; BLOCKED ONLY ON FOUNDER ACTIONS (post content, create discount, film).**
+**Updated:** 2026-07-18 (session 10, v1.7 autonomous marketing) · **Branch:** `main` ·
+**Status: CONTENT FACTORY PROVEN (4 publishable videos, zero filming); WAITLIST EMAIL AUTOMATED + LIVE; ai-seo LIVE. BLOCKED ON: founder OTPs for channel creation + first-post go.**
+
+## Session 10 (2026-07-18) — autonomous marketing (goal prompt v1.7)
+
+**Operating model change (founder order, 2026-07-18):** Claude acts AS
+HanVoice — posts, emails, uploads — without per-item approval. GTM.md's
+founder-posts-everything model and Instagram/new-account bans are
+**SUSPENDED** (GTM.md deliberately NOT edited). Boundaries that survive:
+founder ping for logins/OTPs/new-platform accounts/money/first post per
+channel; Resend only to real waitlist emails; product truth non-negotiable;
+human pacing on platforms.
+
+**Shipped + verified this session:**
+
+1. **SEOUL49 verified at live checkout** — founder created it in Polar;
+   checkout renders $69 → −$20 → **$49 total** (screenshot:
+   `docs/content/week-01/video/seoul49-checkout-proof.png`). Copy may
+   reference it.
+2. **CONTENT FACTORY (stage 1 complete): 4 publishable 9:16 videos**, zero
+   founder filming, in `docs/content/week-01/video/`:
+   - `tiktok-01-iced-americano.mp4` (33.7s) — real scored attempt **98** on
+     camera + Minji conversation. Voice: Azure `en-US-AndrewMultilingual`.
+   - `tiktok-02-taxi.mp4` (36.3s) — bad attempt heard as **"명동 kg."** →
+     app correction → clean attempt → ✓ "Told the driver your destination".
+     Voice: `en-GB-Ada` (accents rotated per video for learner diversity —
+     founder request).
+   - `tiktok-03-juseyo-challenge.mp4` (38.3s) — anglicized attempt **76**
+     (아메리카노: 50) vs clean **98**. Voice: `en-US-Ava`.
+   - `tiktok-04-gamsahamnida.mp4` (43.7s) — spelled-with-B attempt **87**
+     (word 78) vs nasalized **98**. Voice: `en-GB-Ollie`.
+   **Pipeline (reproducible):** Azure TTS phrase WAV (+4s silence) → Chrome
+   fake-mic flags via `AGENT_BROWSER_ARGS` (comma-separated!
+   `--use-fake-device-for-media-stream,--use-fake-ui-for-media-stream,--use-file-for-fake-audio-capture=<wav>%noloop`)
+   → agent-browser `record` (viewport `390 844 2` → 780×1688) → real scored
+   attempt through production → ffmpeg assembly (trim/concat/ASS captions/
+   TTS voiceover mix). Build scripts + raw takes in session scratchpad
+   (`scratchpad/video/build0*.sh`) — regenerate anytime; the .ass caption
+   files and VO WAVs are there too.
+3. **Waitlist email automation (stage 3 complete)** — `535af9e`. POST
+   /api/waitlist fires the phrase-card email via Resend (BackgroundTasks) on
+   fresh inserts only; duplicates stay silent (no probing/spam). Email =
+   card link + free-plan pitch + trip-date question + SEOUL49 P.S. New:
+   `backend/app/services/waitlist_email.py`, `resend_api_key` setting,
+   RESEND_API_KEY set on Fly. Card hosted at
+   **hanvoice.app/phrase-card.html**. 126 backend tests, ruff+mypy clean.
+   **Live-verified:** signup 201 → Resend message id
+   `54cb15e3-8e12-4e5c-ac3c-d11f8858943c` (fly logs `waitlist_email_sent`).
+4. **ai-seo layer (stage 4 half) — `c8ca447`:** `hanvoice.app/llms.txt`
+   (strict product truth + honest-limitations), SoftwareApplication + FAQPage
+   JSON-LD on landing, phrase-card in sitemap. All verified live.
+5. **Directory submission kit** ready:
+   `docs/content/week-01/directory-submission-kit.md` — positioning variants
+   ×3, 14 free directories prioritized. Blocked ONLY on founder one-line
+   approval to create accounts (suggest batch: "yes to all 14, use
+   +directories@gmail alias").
+
+**Signups (the KPI): 0 real.** Waitlist has 1 row = our live-check
+(`+waitlist-live-check@gmail.com`). Demo accounts created for filming:
+`+content-demo{,2,3,4,5}@gmail.com` / `content-demoN-0718-pass` (demo1 has
+no N suffix in password: `content-demo-0718-pass`).
+
+**Stage 2 (channels) NOT STARTED — the founder bottleneck now:**
+(a) TikTok account @hanvoice (needs founder OTP), (b) YouTube channel,
+(c) IG. Then first-post go per channel. Videos are ready to upload the
+moment a channel exists.
+
+**Proposed daily loop (stage 5 — DO NOT start without founder go):** daily:
+post next queue video to all channels (same file), reply to all comments,
+check PostHog signups by source, one-line report. Weekly: batch 3 new
+videos via the pipeline. Kill criteria: any channel with 0 signups after 3
+weeks of daily posting → stop posting there. Founder cost: ~0 after
+channel setup.
+
+**Session-10 landmines:**
+- **agent-browser flakiness on this machine:** intermittent os-error-10060
+  daemon read failures; clicks sometimes silently no-op (✓ but nothing
+  happens). Mitigations that work: `batch` command, click-then-verify
+  ("Listening/Got it" text) with retry, **eval-DOM-click for the record
+  button**, dumb `wait N` instead of long `wait --text`. Refs go stale after
+  every SPA re-render — re-snapshot after Back/navigation.
+- **`record start` creates a FRESH context** — auth is lost; `state load
+  <auth.json>` inside the recording restores it. Recording rolls in real
+  time between CLI calls — keep takes in single Bash calls or trim.
+- **Conversation page recorder has NO auto-submit** (lesson SpeakBlock
+  does): the silence gate discards the take. Must manually stop within the
+  gate window — in-page `setTimeout(()=>btn.click(), <phrase_ms+700>)`.
+- **Azure scoring is lenient:** native-ish TTS scores 97-99; English-voice
+  romanization still scored 76-87 (and once scored americano-audio at 81
+  against 얼마예요). Fine for content (real numbers), but don't claim the
+  scorer is brutal in copy.
+- `AGENT_BROWSER_ARGS` must be **comma-separated** (space-separated becomes
+  one quoted arg Chrome ignores). Verify with `Get-CimInstance Win32_Process`.
+- `fly` CLI is `flyctl` in PowerShell (not on bash PATH); `vercel deploy`
+  output is JSON-ish — run in PowerShell to see "Aliased".
+- Email-01 doc said "no price talk" — superseded: the automated email
+  includes the SEOUL49 P.S. by design (task 3 of v1.7).
+
+**NEXT ACTION (first thing, next session):** ping founder for TikTok
+account creation OTP (stage 2) — everything else is waiting on channels.
+If founder unavailable: fire the 14 directory submissions on approval, or
+batch videos #05-#07 scripts through the pipeline.
 
 ## Session 9 (2026-07-18) — launch execution
 
