@@ -81,7 +81,11 @@ function PlanCard({ plan }: { plan: Plan }) {
       </ul>
       <Link to="/signup" className="mt-auto">
         <Button className="w-full" variant={featured ? "primary" : "quiet"}>
-          {plan.id === "free" ? "Start free" : "Sign up, then upgrade"}
+          {plan.id === "free"
+            ? "Start free"
+            : plan.id === "founder"
+              ? "Get the Founder Pass"
+              : "Go Premium"}
         </Button>
       </Link>
     </Card>
@@ -274,8 +278,8 @@ export function LandingPage() {
           <h2 className="text-xl font-bold">Trip booked but not ready yet?</h2>
           <p className="max-w-md text-sm text-ink-soft">
             Get the free <strong>Seoul Survival Phrase Card</strong> — the trip phrases from
-            our lessons with pronunciation tips — plus the founder-launch discount when we
-            open the doors.
+            our lessons with pronunciation tips — plus a launch discount on the Founder
+            Pass.
           </p>
           <WaitlistForm />
         </section>
