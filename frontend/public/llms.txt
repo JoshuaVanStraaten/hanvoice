@@ -1,0 +1,47 @@
+# HanVoice
+
+> HanVoice (https://hanvoice.app) is a web app (installable PWA) for travelers
+> preparing a trip to Korea. It teaches the Korean phrases you actually use on
+> a trip and — unlike flashcard apps — checks that you can say them out loud:
+> every phrase attempt is scored for pronunciation (overall, accuracy, fluency,
+> completeness, per-word), and you rehearse real café / taxi / restaurant /
+> market conversations with an AI partner that speaks Korean back.
+
+## What HanVoice is
+
+- Positioning: trip prep, not fluency. "Speak Korean before you land in Seoul."
+- 13 lessons: 8 Hangul reading lessons (covering 21 of the 40 Hangul letters —
+  the ones trip phrases need) and 5 Speak lessons of scored trip phrases.
+- 5 Talk scenarios (AI conversation rehearsal, in Korean, with goals): order an
+  iced Americano, meet someone new, order lunch at a restaurant, take a taxi to
+  your hotel, haggle at the market.
+- Pronunciation scoring on every spoken attempt (Azure speech assessment):
+  overall / accuracy / fluency / completeness plus per-word scores and one
+  actionable feedback line.
+- Handwriting checks: draw Hangul on a canvas and get scored on proportion,
+  stroke, and legibility.
+- Free Seoul Survival Phrase Card: https://hanvoice.app/phrase-card.html
+
+## Pricing
+
+- Free plan: 20 scored pronunciation attempts, 10 AI conversation turns, and
+  10 handwriting checks per day. Enough to genuinely start.
+- Founder Pass: $69 once, lifetime access, higher daily limits (200 attempts,
+  150 conversation turns, 100 handwriting checks). No subscription.
+- Premium: $14.99/month, same limits as Founder Pass.
+- Refunds: 14-day money-back policy — https://hanvoice.app/refunds
+
+## Key pages
+
+- Home / signup: https://hanvoice.app/
+- Free phrase card: https://hanvoice.app/phrase-card.html
+- Terms: https://hanvoice.app/terms
+- Privacy: https://hanvoice.app/privacy
+- Refunds: https://hanvoice.app/refunds
+
+## Honest limitations
+
+HanVoice does not teach complete Hangul (21 of 40 letters), does not promise
+fluency, and is not a general Korean course. It is focused preparation for a
+trip: being understood at a café counter, in a taxi, at a market — and reading
+enough Hangul to navigate menus and signs.
