@@ -118,6 +118,22 @@ buttons. All engineering for users we don't have.
 
 ## 5. The first-customer play — 14 days
 
+> **2026-07-18 AMENDMENT (session 9) — the play restarts with money LIVE.**
+> Polar billing is live and E2E-verified; the reservation contingency below
+> is DEAD — every ask is the real checkout from Day 1. Prep work is done:
+> landing copy carries the $69 ask + refund line, launch email is
+> send-ready (`docs/content/week-01/email-02-launch-founder-pass.md`),
+> Reddit reply kit + 7-day TikTok queue exist. **The waitlist was found
+> EMPTY on 2026-07-18 (0 rows)** — the original Day-6/12 email steps only
+> fire once signups exist; everything else is unchanged. Re-dated clock:
+> **Day 0 = Fri 2026-07-18** (done: copy flip + funnel verification + all
+> assets) · Day 1 = Sat 07-19 (SEOUL49 in Polar, card PDF, TikTok account,
+> video #1) · Days 2–7 = 07-20 → 07-25 per the queue + reply kit · Day 8+
+> = 07-26 onward per the original plan, with the launch email firing the
+> day the waitlist is non-empty. **Launch discount (waitlist promise, the
+> one sanctioned exception to §6):** code `SEOUL49`, $20 off → $49,
+> Founder Pass only, 25 redemptions max, expires 2026-08-01.
+
 Assumes ~40 min/day. The money-ask is **gated on the Paddle approval email**,
 not on a calendar day — days 1–11 are deliberately billing-free audience
 work. Go-live itself is ~1 h (click-by-click already in HANDOVER.md).
@@ -201,6 +217,9 @@ closes at zero.
   complete Hangul) proceeds on its own track and is NOT a launch dependency.
 - **No discounting below $69** and no "free founder passes for feedback" —
   feedback we get anyway; a discounted first customer proves nothing.
+  *(Amended 2026-07-18: the ONE exception is the launch discount promised
+  to the waitlist — `SEOUL49`, $49, capped at 25, gone 2026-08-01. No other
+  discounts, ever, without amending this line again.)*
 - **No K-pop fan campaign yet.** It's the bigger market and the wrong first
   target; it becomes primary after retention + listening ship (Next Month),
   which is exactly when its promise becomes honest.

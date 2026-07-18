@@ -1,6 +1,70 @@
 # HanVoice — Session Handover
 
-**Updated:** 2026-07-16 (session 8) · **Branch:** `main` · **Status: POLAR BILLING — ACCOUNT LIVE + CODE DONE; DEPLOY + E2E PENDING (see Polar section).** Session 8: Paddle rejected twice → Polar chosen (`_os/DECISIONS.md`), account created/KYC'd/approved same day, products + webhook + token provisioned via API, full billing rewrite shipped (backend 124 tests / frontend 42 tests green). Next founder/session actions are the 4 numbered steps in the Polar section.
+**Updated:** 2026-07-18 (session 9, v1.6 launch/GTM) · **Branch:** `main` ·
+**Status: MONEY-ASK LIVE ON hanvoice.app; ALL LAUNCH ASSETS READY; BLOCKED ONLY ON FOUNDER ACTIONS (post content, create discount, film).**
+
+## Session 9 (2026-07-18) — launch execution
+
+**Shipped + verified live:**
+- **Money-ask flipped** (`7f8d56d`): landing plan CTAs are now "Get the
+  Founder Pass" / "Go Premium" (was "Sign up, then upgrade"); waitlist blurb
+  promises "a launch discount on the Founder Pass" (was "when we open the
+  doors"). **Refund risk-reversal** line added under pricing linking /refunds
+  (second commit after this one). Both deployed (`vercel deploy --prod --yes`)
+  and string-verified in the served bundle at hanvoice.app.
+- **Live checkout re-verified end-to-end today:** fresh pre-confirmed user
+  created via Supabase admin API → password login → `POST /billing/checkout
+  {plan:founder}` → 200 with polar.sh URL → page renders "Founder Pass $69",
+  real card fields, and an **"Add discount code"** button (discount codes are
+  redeemable at checkout — the funnel the launch email needs exists). Test
+  user: `joshuavanstraaten100+launch-check-0718@gmail.com` /
+  `launch-check-0718-pass` (no purchase made; safe to delete or ignore).
+- **Marketing skills pack** cloned to `.claude/skills/marketingskills`
+  (coreyhaines31/marketingskills — legit, 46 skills; used copywriting/offers/
+  emails this session).
+
+**CRITICAL FINDING: the waitlist is EMPTY — 0 rows in `waitlist`.** No
+content has ever been posted (session-7 founder actions never ran), so
+nothing feeds the funnel. The launch email cannot be sent to anyone yet.
+**Customer #1's bottleneck is 100% top-of-funnel founder actions now — no
+engineering remains anywhere on the critical path.**
+
+**The launch offer (FIXED — dashboard must match copy):** discount code
+**`SEOUL49`** — $20 off Founder Pass → **$49**, Founder-Pass product only,
+**max 25 redemptions**, **expires 2026-08-01**. NOT yet created in Polar:
+the org token has no discounts scope (403 verified today) and the
+agent-browser profile has no Polar session (Google OAuth needs the founder).
+Creating it is a 2-min dashboard task — see founder checklist below.
+
+**Launch assets, all in `docs/content/week-01/`:**
+- `email-02-launch-founder-pass.md` — send-ready launch email (delivers
+  phrase card + SEOUL49 ask + 14-day-refund risk reversal). Send via Resend
+  broadcast the day the waitlist is non-empty.
+- `reddit-02-reply-kit.md` — 5 thread-archetype replies (value-first,
+  rules-compliant, card-verbatim Korean only) + 10-min recon URL list.
+  **Reddit hard-blocks ALL automation from this machine** (agent-browser,
+  curl, WebFetch all walled) — recon/posting is founder-browser-only.
+- `tiktok-queue-7day.md` — 7-day queue: days 1–3 = existing scripts, days
+  4–6 new, day 7 = the $69/SEOUL49 launch video. 5 of 7 are pure
+  screen-captures; only 6–7 need your face. Files are IG-Reels-compatible
+  (posting to IG stays a founder call — GTM still says SKIP).
+
+**Founder checklist (impact order):** (1) create SEOUL49 in Polar dashboard;
+(2) print phrase card PDF; (3) create TikTok account, bio → hanvoice.app,
+post Day-1 video; (4) 10-min Reddit recon + first archetype reply;
+(5) film/post daily per the queue; (6) send launch email once waitlist > 0.
+KPI unchanged: first paying customer · 100 signups · 25 WAU · first
+10k-view post.
+
+**Session-9 landmines:** Reddit's bot-wall (above) — don't burn a session
+retrying it. Polar dashboard needs founder Google login; token scope can't
+create discounts. `vercel deploy` now wants `--yes` (interactive promote
+prompt otherwise). Supabase admin API (`/auth/v1/admin/users`,
+`email_confirm: true`) is the fast way to mint funnel-check users.
+
+## Previous status (session 8)
+
+Session 8: Paddle rejected twice → Polar chosen (`_os/DECISIONS.md`), account created/KYC'd/approved same day, products + webhook + token provisioned via API, full billing rewrite shipped (backend 124 tests / frontend 42 tests green). Deploy + E2E completed same session — see Polar section.
 
 **Previous status (session 7):** DEPLOYED; CONTENT ENGINE BUILT + GTM COPY LIVE. Session 7 (v1.5) shipped ROADMAP Immediate 18–19 and the content machine. **(a) Copy live on hanvoice.app** (deployed `vercel deploy --prod`, dpl_C2JaadeFTKcyzjjAEfu2sfcvcxES, strings verified in served HTML + bundle): hero/features in `frontend/src/pages/LandingPage.tsx` swapped to GTM §2 trip-prep copy ("Speak Korean before you land in Seoul"), waitlist section now offers the free **Seoul Survival Phrase Card** + launch discount (GTM §4), `frontend/index.html` meta/OG/Twitter aligned. eslint/tsc/42 tests green. **(b) `docs/CONTENT_ENGINE.md`**: 3 formats kept (tourist-phrase TikTok demo, pronunciation tip/challenge TikTok, Reddit trip-value post — K-drama/K-pop/slang/daily killed as wrong-segment), copy-paste LLM prompt templates per format, ~5 h/week schedule (Sunday 3 h batch), funnel table (all build steps ✅; remaining ⚠ are founder actions from GTM §5), Sunday 15-min KPI ritual + review log. **(c) `docs/content/week-01/`**: the phrase card (`seoul-survival-phrase-card.html` — open in browser → print to PDF; all phrases verbatim from `supabase/seed.sql`, nothing invented) + 5 ready pieces mapped to GTM days 3–8 (3 TikTok scripts, 1 r/koreatravel post, 1 waitlist email) — see its README for posting order. **No engineering left in Immediate. Open threads: (1) founder runs the 14-day play Day 0/1 (GTM §5): fresh-signup funnel check, print card PDF, create TikTok account; (2) Paddle go-live steps when the approval email arrives (Paddle section below; until then every money-ask is the reservation fallback, GTM §5); (3) weekly loop = produce/post from CONTENT_ENGINE.md, v1.3 build sessions only for Next-Month roadmap items.**
 
@@ -114,8 +178,8 @@ E2E discount was deleted afterwards. Second E2E account
 founder pass (like the original test account). Premium subscription path
 is unit-tested but not click-tested (same as Paddle era) — optional.
 
-**Remaining: flip GTM copy from reservation-fallback to the real $69
-money-ask — GTM §5's gate is OPEN. Billing is LIVE.**
+**DONE (session 9, 2026-07-18): GTM copy flipped to the real $69 money-ask
+and live-verified. Nothing engineering-side remains for the first sale.**
 
 **Polar gotchas:** dashboard form buttons don't submit on click — press
 Enter inside a form field instead (token + product forms both). Org
