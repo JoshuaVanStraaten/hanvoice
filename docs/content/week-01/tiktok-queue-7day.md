@@ -138,3 +138,11 @@ We're live."
 **Truth check:** "6 months" — adjust to the real build duration; everything
 else verified: 13 lessons, 5 scenarios, $69 lifetime, SEOUL49 = $49 first
 25. Never say "only 25 passes" — the cap is on the discount.
+
+---
+
+## POSTING CAPTION for #05 video file (`video/tiktok-05-two-words.mp4`, built 2026-07-18)
+
+이거 주세요 (i-geo ju-se-yo) + pointing = dinner ordered. The whole
+restaurant game is one pattern. Free phrase card in bio. #koreatravel
+#learnkorean #koreanfood #seoul
