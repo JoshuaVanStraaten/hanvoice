@@ -270,6 +270,13 @@ export function LandingPage() {
               <PlanCard key={plan.id} plan={plan} />
             ))}
           </div>
+          <p className="text-center text-sm text-ink-soft">
+            Every paid plan comes with a 14-day no-questions{" "}
+            <Link to="/refunds" className="font-semibold text-taegeuk-blue">
+              refund
+            </Link>
+            . If it doesn&apos;t help before your trip, you don&apos;t pay for it.
+          </p>
         </section>
 
         {/* Waitlist — the GTM lead magnet (docs/GTM.md §4); delivery is a
