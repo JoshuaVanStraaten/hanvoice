@@ -98,10 +98,27 @@ channel setup.
 - Email-01 doc said "no price talk" — superseded: the automated email
   includes the SEOUL49 P.S. by design (task 3 of v1.7).
 
-**NEXT ACTION (first thing, next session):** ping founder for TikTok
-account creation OTP (stage 2) — everything else is waiting on channels.
-If founder unavailable: fire the 14 directory submissions on approval, or
-batch videos #05-#07 scripts through the pipeline.
+**TikTok signup is BOT-WALLED from this machine (verified 2026-07-18, late
+session):** form fills fine but "Send code" never fires the email API —
+TikTok's mssdk/zti device-trust stack silently swallows the click in BOTH
+headless and headed agent-browser. Same class of wall as Reddit; do NOT
+burn another session retrying signup. **Working fallback: founder creates
+the account on his phone** (email `joshuavanstraaten100+hanvoice@gmail.com`
+/ pass `HanVoice-TT-2026!`, DOB May 14 1995 already entered in the attempt,
+username @hanvoice or nearest free, bio "Speak Korean before you land in
+Seoul" + hanvoice.app). Then next session: web LOGIN (less protected than
+signup) in agent-browser, verification code readable via the Gmail MCP
+connector, `state save` → channel is Claude-operated. Same auth-touch
+pattern for YouTube (founder logs into Google in a headed agent-browser
+window once, state save). **Founder said 2026-07-18: skip Instagram** —
+GTM's IG SKIP stands. Founder also greenlit exploring **Google OAuth
+signup** (Supabase Google provider + landing button; needs founder for
+Google Cloud OAuth credentials) — queued behind channels.
+
+**NEXT ACTION (first thing, next session):** if founder has created the
+TikTok account (phone, 5 min): log in via agent-browser (Gmail MCP reads
+the code), save state, upload video #1, get one-time first-post go. Else:
+fire the 14 directory submissions on approval, or batch videos #05-#07.
 
 ## Session 9 (2026-07-18) — launch execution
 
