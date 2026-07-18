@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     # Sentry error monitoring (optional — no-op when empty)
     sentry_dsn: str = ""
 
+    # Resend transactional email (optional — waitlist emails no-op when empty)
+    resend_api_key: str = ""
+    resend_from: str = "Joshua at HanVoice <hello@hanvoice.app>"
+
     # Polar billing (optional — billing routes 503 when unconfigured).
     # Checkout sessions are created server-side with the org access token;
     # the webhook secret verifies standard-webhooks signatures.

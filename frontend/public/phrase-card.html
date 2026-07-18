@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Seoul Survival Phrase Card — HanVoice</title>
+<style>
+  /* One-page A4 card. Open in a browser → Print → Save as PDF. */
+  @page { size: A4; margin: 10mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif;
+    background: #f6f4ef; color: #21211d;
+    width: 190mm; margin: 0 auto; padding: 6mm 0;
+    font-size: 9.2pt; line-height: 1.32;
+  }
+  .hangul { font-family: "Noto Serif KR", "Nanum Myeongjo", "Malgun Gothic", serif; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 3mm; }
+  .brand { font-size: 15pt; font-weight: 800; letter-spacing: -0.02em; }
+  .brand .red { color: #c8102e; } .brand .blue { color: #003478; }
+  h1 { font-size: 13pt; font-weight: 800; }
+  .sub { color: #6b675e; font-size: 8.5pt; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  section {
+    background: #fffdf8; border: 1px solid #e3ded2; border-radius: 3mm;
+    padding: 2.6mm 3mm; break-inside: avoid;
+  }
+  h2 {
+    font-size: 9.5pt; font-weight: 800; color: #003478;
+    border-bottom: 1px solid #e3ded2; padding-bottom: 1mm; margin-bottom: 1.6mm;
+  }
+  h2 .ko { color: #c8102e; margin-right: 1.2mm; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 0.9mm 0; vertical-align: top; }
+  td.ko { font-size: 10.5pt; white-space: nowrap; padding-right: 2.5mm; font-weight: 600; }
+  td.ro { color: #6b675e; font-size: 8pt; padding-right: 2.5mm; }
+  td.en { font-size: 8.6pt; }
+  .tip {
+    margin-top: 1.6mm; padding: 1.4mm 2mm; background: #f3efe6;
+    border-left: 2.5px solid #c8102e; border-radius: 1mm;
+    font-size: 7.8pt; color: #4a463d;
+  }
+  .tip b { color: #21211d; }
+  footer {
+    margin-top: 3mm; padding-top: 2mm; border-top: 1px solid #e3ded2;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 8.5pt; color: #6b675e;
+  }
+  footer .cta { font-weight: 700; color: #21211d; }
+  footer .url { color: #003478; font-weight: 800; }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Seoul Survival Phrase Card</h1>
+      <p class="sub">The trip phrases from HanVoice's Speak lessons — say them out loud before you fly.</p>
+    </div>
+    <div class="brand"><span class="red hangul">한</span><span class="blue">Voice</span></div>
+  </header>
+
+  <div class="grid">
+    <section>
+      <h2><span class="ko hangul">인사</span>Greetings &amp; thanks</h2>
+      <table>
+        <tr><td class="ko hangul">안녕하세요</td><td class="ro">an-nyeong-ha-se-yo</td><td class="en">Hello</td></tr>
+        <tr><td class="ko hangul">감사합니다</td><td class="ro">gam-sa-ham-ni-da</td><td class="en">Thank you</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> 감사합니다 is spelled with a <i>b</i> but said with an <i>m</i> — gam-sa-<b>ham</b>-ni-da. Sounds rule over spelling.</p>
+    </section>
+
+    <section>
+      <h2><span class="ko hangul">카페</span>At the café</h2>
+      <table>
+        <tr><td class="ko hangul">아이스 아메리카노 주세요</td><td class="ro">a-i-seu a-me-ri-ka-no ju-se-yo</td><td class="en">One iced americano, please</td></tr>
+        <tr><td class="ko hangul">얼마예요?</td><td class="ro">eol-ma-ye-yo?</td><td class="en">How much is it?</td></tr>
+        <tr><td class="ko hangul">카드로 할게요</td><td class="ro">ka-deu-ro hal-ge-yo</td><td class="en">I'll pay by card</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> [thing] + 주세요 orders anything — the most useful word on this card. The ㅈ is softer than an English J: no puff of air.</p>
+    </section>
+
+    <section>
+      <h2><span class="ko hangul">만남</span>First meetings</h2>
+      <table>
+        <tr><td class="ko hangul">만나서 반가워요</td><td class="ro">man-na-seo ban-ga-wo-yo</td><td class="en">Nice to meet you</td></tr>
+        <tr><td class="ko hangul">이름이 뭐예요?</td><td class="ro">i-reu-mi mwo-ye-yo?</td><td class="en">What's your name?</td></tr>
+        <tr><td class="ko hangul">저는 알렉스예요</td><td class="ro">jeo-neun al-lek-seu-ye-yo</td><td class="en">I'm Alex (swap in your name!)</td></tr>
+        <tr><td class="ko hangul">어느 나라에서 왔어요?</td><td class="ro">eo-neu na-ra-e-seo wa-sseo-yo?</td><td class="en">Which country are you from?</td></tr>
+        <tr><td class="ko hangul">한국어 조금 해요</td><td class="ro">han-gu-geo jo-geum hae-yo</td><td class="en">I speak a little Korean</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> 한국어 조금 해요 said early buys you slower, kinder Korean for the whole conversation.</p>
+    </section>
+
+    <section>
+      <h2><span class="ko hangul">식당</span>At the restaurant</h2>
+      <table>
+        <tr><td class="ko hangul">메뉴 좀 주세요</td><td class="ro">me-nyu jom ju-se-yo</td><td class="en">Could I get the menu, please?</td></tr>
+        <tr><td class="ko hangul">이거 주세요</td><td class="ro">i-geo ju-se-yo</td><td class="en">This one, please</td></tr>
+        <tr><td class="ko hangul">물 좀 주세요</td><td class="ro">mul jom ju-se-yo</td><td class="en">Some water, please</td></tr>
+        <tr><td class="ko hangul">너무 맛있어요</td><td class="ro">neo-mu ma-si-sseo-yo</td><td class="en">It's really delicious</td></tr>
+        <tr><td class="ko hangul">계산할게요</td><td class="ro">gye-san-hal-ge-yo</td><td class="en">I'd like to pay</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> 이거 주세요 + pointing = a full meal ordered. 맛있어요 runs together: ma-si-sseo-yo.</p>
+    </section>
+
+    <section>
+      <h2><span class="ko hangul">길</span>Getting around</h2>
+      <table>
+        <tr><td class="ko hangul">죄송합니다</td><td class="ro">joe-song-ham-ni-da</td><td class="en">Excuse me / I'm sorry</td></tr>
+        <tr><td class="ko hangul">화장실이 어디예요?</td><td class="ro">hwa-jang-si-ri eo-di-ye-yo?</td><td class="en">Where's the bathroom?</td></tr>
+        <tr><td class="ko hangul">지하철역이 어디예요?</td><td class="ro">ji-ha-cheol-lyeo-gi eo-di-ye-yo?</td><td class="en">Where's the subway station?</td></tr>
+        <tr><td class="ko hangul">여기서 멀어요?</td><td class="ro">yeo-gi-seo meo-reo-yo?</td><td class="en">Is it far from here?</td></tr>
+        <tr><td class="ko hangul">천천히 말해 주세요</td><td class="ro">cheon-cheon-hi mal-hae ju-se-yo</td><td class="en">Please speak slowly</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> [place] + 이/가 어디예요? finds anything. 천천히 말해 주세요 is your reset button when the answer comes back too fast.</p>
+    </section>
+
+    <section>
+      <h2><span class="ko hangul">시장</span>Money &amp; markets</h2>
+      <table>
+        <tr><td class="ko hangul">하나, 둘, 셋</td><td class="ro">ha-na, dul, set</td><td class="en">One, two, three</td></tr>
+        <tr><td class="ko hangul">카드 돼요?</td><td class="ro">ka-deu dwae-yo?</td><td class="en">Do you take card?</td></tr>
+        <tr><td class="ko hangul">현금으로 할게요</td><td class="ro">hyeon-geu-meu-ro hal-ge-yo</td><td class="en">I'll pay in cash</td></tr>
+        <tr><td class="ko hangul">너무 비싸요</td><td class="ro">neo-mu bi-ssa-yo</td><td class="en">That's too expensive</td></tr>
+        <tr><td class="ko hangul">깎아 주세요</td><td class="ro">kka-kka ju-se-yo</td><td class="en">Could you give me a discount?</td></tr>
+      </table>
+      <p class="tip"><b>Tip:</b> doubled letters (비싸요, 깎아) are tense — tight, zero breath, like the k in "sky" not "key". Haggle at markets, not department stores — and smile.</p>
+    </section>
+  </div>
+
+  <footer>
+    <span class="cta">Practice these out loud — with a real pronunciation score — at <span class="url">hanvoice.app</span></span>
+    <span class="hangul">오늘도 화이팅!</span>
+  </footer>
+</body>
+</html>

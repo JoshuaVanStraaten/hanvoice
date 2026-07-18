@@ -13,6 +13,7 @@ os.environ.setdefault("APP_ENV", "test")
 os.environ.setdefault("AZURE_SPEECH_KEY", "azure-test-key")
 os.environ.setdefault("AZURE_SPEECH_REGION", "koreacentral")
 os.environ.setdefault("NVIDIA_API_KEY", "nvidia-test-key")
+os.environ.setdefault("RESEND_API_KEY", "resend-test-key")
 os.environ.setdefault("NVIDIA_LLM_URL", "http://nvidia.test/llm")
 os.environ.setdefault("NVIDIA_VISION_URL", "http://nvidia.test/vision")
 

@@ -45,7 +45,42 @@ def test_waitlist_duplicate_looks_identical(client):
     respx.mock.post(f"{SUPABASE_REST}/waitlist").mock(
         return_value=httpx.Response(409, json={"code": "23505"})
     )
+    resend = respx.mock.post("https://api.resend.com/emails").mock(
+        return_value=httpx.Response(200, json={"id": "re_dup"})
+    )
     response = client.post("/api/waitlist", json={"email": "fan@example.com"})
+    assert response.status_code == 201
+    assert not resend.called  # duplicates never re-email
+
+
+@respx.mock
+def test_waitlist_fresh_signup_sends_phrase_card_email(client):
+    respx.mock.post(f"{SUPABASE_REST}/waitlist").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    resend = respx.mock.post("https://api.resend.com/emails").mock(
+        return_value=httpx.Response(200, json={"id": "re_123"})
+    )
+    response = client.post(
+        "/api/waitlist", json={"email": "Traveler@Example.com", "source": "tiktok"}
+    )
+    assert response.status_code == 201
+    assert resend.called
+    sent = json.loads(resend.calls[0].request.content)
+    assert sent["to"] == ["traveler@example.com"]
+    assert "phrase-card.html" in sent["html"]
+    assert "SEOUL49" in sent["html"]
+
+
+@respx.mock
+def test_waitlist_email_failure_does_not_break_signup(client):
+    respx.mock.post(f"{SUPABASE_REST}/waitlist").mock(
+        return_value=httpx.Response(201, json=[{"id": 1}])
+    )
+    respx.mock.post("https://api.resend.com/emails").mock(
+        return_value=httpx.Response(500, json={"error": "boom"})
+    )
+    response = client.post("/api/waitlist", json={"email": "fan2@example.com"})
     assert response.status_code == 201
 
 
